@@ -4,8 +4,10 @@
 #ifndef _BODY_H
 #define _BODY_H
 
+#include "BodyComponent.h"
 #include "DeleteEmitter.h"
 #include "FrameId.h"
+#include "core/TypeID.h"
 #include "lua/PropertiedObject.h"
 #include "matrix3x3.h"
 #include "vector3.h"
@@ -123,6 +125,35 @@ public:
 			m_flags &= ~flag;
 	}
 
+	// Check if a specific component is present. This involves a lookup through std::map
+	// so it's not quite as efficient as it should be.
+	template <typename T>
+	bool HasComponent() const
+	{
+		return m_components & (1 << uint8_t(BodyComponentDB::GetComponentType<T>()->idx));
+	}
+
+	// Return a pointer to the component of type T attached to this instance or nullptr.
+	// This returns a non-const pointer for simplicity as the component is technically
+	// not part of the object.
+	template <typename T>
+	T *GetComponent() const
+	{
+		auto *type = BodyComponentDB::GetComponentType<T>();
+		return m_components & (1 << uint8_t(type->idx)) ? type->get(this) : nullptr;
+	}
+
+	template <typename T>
+	T *AddComponent()
+	{
+		auto *type = BodyComponentDB::GetComponentType<T>();
+		if (m_components & (1 << uint8_t(type->idx)))
+			return type->get(this);
+
+		m_components |= (1 << uint8_t(type->idx));
+		return type->newComponent(this);
+	}
+
 	// Only Space::KillBody() should call this method.
 	void MarkDead() { m_dead = true; }
 	bool IsDead() const { return m_dead; }
@@ -157,9 +188,12 @@ public:
 		FLAG_DRAW_EXCLUDE = (1 << 3) // do not draw this body, intended for e.g. when camera is inside
 	};
 
+private:
+	uint64_t m_components = 0;
+
 protected:
 	virtual void SaveToJson(Json &jsonObj, Space *space);
-	unsigned int m_flags;
+	unsigned int m_flags = 0;
 
 	// Interpolated draw orientation-position
 	vector3d m_interpPos;
