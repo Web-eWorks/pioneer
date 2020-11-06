@@ -102,7 +102,6 @@ public:
 	void Explode();
 	virtual bool DoDamage(float kgDamage); // can be overloaded in Player to add audio
 	void SetGunState(int idx, int state);
-	float GetGunTemperature(int idx) const { return GetFixedGuns()->GetGunTemperature(idx); }
 	void UpdateMass();
 	virtual bool SetWheelState(bool down); // returns success of state change, NOT state itself
 	void Blastoff();
@@ -271,6 +270,9 @@ protected:
 
 	LuaRef m_equipSet;
 
+	Propulsion *m_propulsion;
+	FixedGuns *m_fixedGuns;
+
 private:
 	float GetECMRechargeTime();
 	void DoThrusterSounds() const;
@@ -328,20 +330,24 @@ private:
 	std::string m_shipName;
 
 public:
-	void ClearAngThrusterState() { GetPropulsion()->ClearAngThrusterState(); }
-	void ClearLinThrusterState() { GetPropulsion()->ClearLinThrusterState(); }
-	double GetAccelFwd() { return GetPropulsion()->GetAccelFwd(); }
-	void SetAngThrusterState(const vector3d &levels) { GetPropulsion()->SetAngThrusterState(levels); }
-	double GetFuel() const { return GetPropulsion()->GetFuel(); }
-	double GetAccel(Thruster thruster) const { return GetPropulsion()->GetAccel(thruster); }
-	void SetFuel(const double f) { GetPropulsion()->SetFuel(f); }
-	void SetFuelReserve(const double f) { GetPropulsion()->SetFuelReserve(f); }
+	// FIXME: these methods are deprecated; all calls should use the propulsion object directly.
+	void ClearAngThrusterState() { m_propulsion->ClearAngThrusterState(); }
+	void ClearLinThrusterState() { m_propulsion->ClearLinThrusterState(); }
+	double GetAccelFwd() { return m_propulsion->GetAccelFwd(); }
+	void SetAngThrusterState(const vector3d &levels) { m_propulsion->SetAngThrusterState(levels); }
+	double GetFuel() const { return m_propulsion->GetFuel(); }
+	double GetAccel(Thruster thruster) const { return m_propulsion->GetAccel(thruster); }
+	void SetFuel(const double f) { m_propulsion->SetFuel(f); }
+	void SetFuelReserve(const double f) { m_propulsion->SetFuelReserve(f); }
 
-	bool AIMatchVel(const vector3d &vel) { return GetPropulsion()->AIMatchVel(vel); }
-	double AIFaceDirection(const vector3d &dir, double av = 0) { return GetPropulsion()->AIFaceDirection(dir, av); }
-	void AIMatchAngVelObjSpace(const vector3d &angvel) { return GetPropulsion()->AIMatchAngVelObjSpace(angvel); }
-	void SetThrusterState(int axis, double level) { return GetPropulsion()->SetLinThrusterState(axis, level); }
-	void AIModelCoordsMatchAngVel(const vector3d &desiredAngVel, double softness) { return GetPropulsion()->AIModelCoordsMatchAngVel(desiredAngVel, softness); }
+	bool AIMatchVel(const vector3d &vel) { return m_propulsion->AIMatchVel(vel); }
+	double AIFaceDirection(const vector3d &dir, double av = 0) { return m_propulsion->AIFaceDirection(dir, av); }
+	void AIMatchAngVelObjSpace(const vector3d &angvel) { return m_propulsion->AIMatchAngVelObjSpace(angvel); }
+	void SetThrusterState(int axis, double level) { return m_propulsion->SetLinThrusterState(axis, level); }
+	void AIModelCoordsMatchAngVel(const vector3d &desiredAngVel, double softness) { return m_propulsion->AIModelCoordsMatchAngVel(desiredAngVel, softness); }
+
+	// FIXME: these methods are deprecated; all calls should use the guns object directly.
+	float GetGunTemperature(int idx) const { return m_fixedGuns->GetGunTemperature(idx); }
 };
 
 #endif /* _SHIP_H */

@@ -1216,7 +1216,7 @@ static int l_ship_is_hyperspace_active(lua_State *l)
 static int l_ship_get_thruster_state(lua_State *l)
 {
 	Ship *s = LuaObject<Ship>::CheckFromLua(1);
-	vector3d v = s->GetPropulsion()->GetLinThrusterState();
+	vector3d v = s->GetComponent<Propulsion>()->GetLinThrusterState();
 	LuaPush<vector3d>(l, v);
 	return 1;
 }
