@@ -10,6 +10,20 @@
 #include <vector>
 
 struct ShipType {
+	enum class HardpointTag {
+		Gun,
+		Ordnance,
+		Utility,
+	};
+
+	// Information about a specific gun mount on a ship hull
+	struct HardpointInfo {
+		HardpointTag type;
+		std::string tagname;
+		vector2f traverse;
+		uint32_t size;
+	};
+
 	enum DualLaserOrientation { // <enum scope='ShipType' name='DualLaserOrientation' prefix='DUAL_LASERS_' public>
 		DUAL_LASERS_HORIZONTAL,
 		DUAL_LASERS_VERTICAL
@@ -39,6 +53,7 @@ struct ShipType {
 	float linAccelerationCap[THRUSTER_MAX];
 	std::map<std::string, int> slots;
 	std::map<std::string, bool> roles;
+	std::vector<HardpointInfo> hardpoints;
 	Color globalThrusterColor; // Override default color for thrusters
 	bool isGlobalColorDefined; // If globalThrusterColor is filled with... a color :)
 	Color directionThrusterColor[THRUSTER_MAX];
