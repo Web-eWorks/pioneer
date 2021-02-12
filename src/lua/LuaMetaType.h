@@ -8,6 +8,7 @@
 #include "LuaManager.h"
 #include "LuaPushPull.h"
 #include "LuaTable.h"
+#include "src/lua.h"
 
 class LuaMetaTypeBase {
 public:
@@ -440,6 +441,28 @@ public:
 			lua_pushcclosure(L, &secure_trampoline, 1);
 
 		lua_setfield(L, -2, name);
+		lua_pop(L, 1);
+
+		return *this;
+	}
+
+	// Set a function to handle Lua-side construction of this type.
+	// The function is responsible for pulling all needed parameters,
+	// allocating the new object, and pushing it to Lua.
+	LuaMetaType &SetConstructor(lua_CFunction fn)
+	{
+		lua_State *L = m_lua;
+		GetMethodTable(L, m_index);
+
+		// create the thin metatable and add the constructor function
+		lua_newtable(L);
+		lua_pushcfunction(L, fn);
+		if (m_protected)
+			lua_pushcclosure(L, &secure_trampoline, 1);
+		lua_setfield(L, -2, "__call");
+
+		// set the metatable on the publicly available interface
+		lua_setmetatable(L, -2);
 		lua_pop(L, 1);
 
 		return *this;

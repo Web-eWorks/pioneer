@@ -130,7 +130,7 @@ public:
 	template <typename T>
 	bool HasComponent() const
 	{
-		return m_components & (1 << uint8_t(BodyComponentDB::GetComponentType<T>()->idx));
+		return m_components & (1 << uint8_t(BodyComponentDB::GetComponentType<T>()->componentIndex));
 	}
 
 	// Return a pointer to the component of type T attached to this instance or nullptr.
@@ -140,17 +140,17 @@ public:
 	T *GetComponent() const
 	{
 		auto *type = BodyComponentDB::GetComponentType<T>();
-		return m_components & (1 << uint8_t(type->idx)) ? type->get(this) : nullptr;
+		return m_components & (1 << uint8_t(type->componentIndex)) ? type->get(this) : nullptr;
 	}
 
 	template <typename T>
 	T *AddComponent()
 	{
 		auto *type = BodyComponentDB::GetComponentType<T>();
-		if (m_components & (1 << uint8_t(type->idx)))
+		if (m_components & (1 << uint8_t(type->componentIndex)))
 			return type->get(this);
 
-		m_components |= (1 << uint8_t(type->idx));
+		m_components |= (1 << uint8_t(type->componentIndex));
 		return type->newComponent(this);
 	}
 

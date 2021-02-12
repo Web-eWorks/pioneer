@@ -3,6 +3,7 @@
 
 #include "EnumStrings.h"
 #include "Frame.h"
+#include "GunManager.h"
 #include "Pi.h"
 #include "Planet.h"
 #include "Player.h"
@@ -29,6 +30,7 @@ bool Ship::AITimeStep(float timeStep)
 
 		// just in case the AI left it on
 		ClearThrusterState();
+		GetComponent<GunManager>()->StopFiringAllGuns();
 		for (int i = 0; i < Guns::GUNMOUNT_MAX; i++)
 			SetGunState(i, 0);
 		return true;

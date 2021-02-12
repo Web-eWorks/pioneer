@@ -462,4 +462,31 @@ void pi_lua_generic_push(lua_State *l, T *value)
 		lua_pushnil(l);
 }
 
+// LuaPushPull for RefCountedPtr<T>.
+template <class T>
+//typename std::enable_if<std::is_base_of<RefCounted, T>::value, void>::type
+void pi_lua_generic_pull(lua_State *l, int index, RefCountedPtr<T> &out)
+{
+	assert(l == Lua::manager->GetLuaState());
+	out.Reset(LuaObject<typename std::remove_cv<T>::type>::CheckFromLua(index));
+}
+
+template <class T>
+bool pi_lua_strict_pull(lua_State *l, int index, RefCountedPtr<T> &out)
+{
+	assert(l == Lua::manager->GetLuaState());
+	out.Reset(LuaObject<typename std::remove_cv<T>::type>::GetFromLua(index));
+	return out.Valid();
+}
+
+template <class T>
+void pi_lua_generic_push(lua_State *l, RefCountedPtr<T> value)
+{
+	assert(l == Lua::manager->GetLuaState());
+	if (value)
+		LuaObject<typename std::remove_cv<T>::type>::PushToLua(value.Get());
+	else
+		lua_pushnil(l);
+}
+
 #endif

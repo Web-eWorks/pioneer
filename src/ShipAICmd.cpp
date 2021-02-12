@@ -5,6 +5,7 @@
 
 #include "Frame.h"
 #include "Game.h"
+#include "GunManager.h"
 #include "Pi.h"
 #include "Planet.h"
 #include "Ship.h"
@@ -279,6 +280,7 @@ bool AICmdKamikaze::TimeStepUpdate()
 		}
 
 		ship->SetGunState(0, 0);
+		ship->GetComponent<GunManager>()->StopFiringAllGuns();
 
 	} else {
 		// Missile, for now ;-)

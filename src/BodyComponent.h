@@ -6,6 +6,7 @@
 #include "JsonFwd.h"
 #include "core/TypeID.h"
 
+#include <cassert>
 #include <cstddef>
 #include <map>
 #include <vector>
@@ -27,17 +28,6 @@ class BodyComponent {};
 */
 class BodyComponentDB {
 public:
-	using ComponentID = size_t;
-
-	// Polymorphic interface to support generic deletion operations
-	struct PoolBase {
-		PoolBase(size_t i) :
-			idx(i) {}
-		size_t idx = 0;
-
-		virtual void deleteComponent(Body *body) = 0;
-	};
-
 	// Polymorphic interface to support generic serialization operations
 	// This functionality is separated to facilitate components that do not wish
 	// to be serialized.
@@ -47,6 +37,16 @@ public:
 		std::string typeName;
 		virtual void toJson(const Body *body, Json &obj, Space *space) = 0;
 		virtual BodyComponent *fromJson(Body *body, const Json &obj, Space *space) = 0;
+	};
+
+	// Polymorphic interface to support generic deletion operations
+	struct PoolBase {
+		PoolBase(size_t i) :
+			componentIndex(i) {}
+		size_t componentIndex = 0;
+		SerializerBase *serializer = nullptr;
+
+		virtual void deleteComponent(Body *body) = 0;
 	};
 
 	template <typename T>
@@ -98,30 +98,45 @@ public:
 	template <typename T>
 	static Pool<T> *GetComponentType()
 	{
-		if (!m_componentPools.count(type_id<T>())) {
-			m_componentPools.emplace(type_id<T>(), new Pool<T>(m_componentIdx++));
+		auto iter = m_componentPools.find(type_id<T>());
+		if (iter == m_componentPools.end()) {
+			iter = m_componentPools.emplace(type_id<T>(), new Pool<T>(m_componentIdx++)).first;
 			m_componentTypes.push_back(type_id<T>());
 		}
 
-		return static_cast<Pool<T> *>(m_componentPools.at(type_id<T>()).get());
+		return static_cast<Pool<T> *>(iter->second.get());
 	}
 
-	// Returns (if present) the polymorphic interface to component with the index `idx`
+	// Returns (if present) the polymorphic interface to component associated with the given index
 	// This differs from the type-ID and is volatile between program restarts
-	static PoolBase *GetComponentType(size_t idx) { return m_componentPools.at(m_componentTypes[idx]).get(); }
+	static PoolBase *GetComponentType(size_t componentIndex) { return m_componentPools.at(m_componentTypes[componentIndex]).get(); }
 
 	// Register a serializer for the given type.
 	template <typename T>
 	static bool RegisterSerializer(std::string typeName)
 	{
-		assert(!m_componentSerializers.count(type_id<T>()));
-		m_componentSerializers.emplace(type_id<T>(), new Serializer<T>(typeName, GetComponentType<T>()));
+		assert(!m_componentSerializers.count(typeName));
+		SerializerBase *serial = new Serializer<T>(typeName, GetComponentType<T>());
+		m_componentSerializers.emplace(typeName, serial);
+		GetComponentType<T>()->serializer = serial;
 		return true;
+	}
+
+	// Returns a pointer to the registered Serializer instance for a type identified by the given name, or nullptr.
+	// To retrieve the serializer instance for a given type index, use GetComponentType(idx)->serializer
+	// or GetComponentType<T>()->serializer.
+	static SerializerBase *GetSerializer(const std::string &typeName)
+	{
+		auto iter = m_componentSerializers.find(typeName);
+		if (iter != m_componentSerializers.end())
+			return iter->second.get();
+
+		return nullptr;
 	}
 
 private:
 	static std::map<size_t, std::unique_ptr<PoolBase>> m_componentPools;
-	static std::map<size_t, std::unique_ptr<SerializerBase>> m_componentSerializers;
+	static std::map<std::string, std::unique_ptr<SerializerBase>> m_componentSerializers;
 	static std::vector<size_t> m_componentTypes;
 	static size_t m_componentIdx;
 };
