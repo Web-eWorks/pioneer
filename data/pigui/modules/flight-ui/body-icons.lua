@@ -6,7 +6,7 @@ local ui = require 'pigui'
 
 local icons = ui.theme.icons
 
-local ASTEROID_RADIUS = 1500000 -- rocky planets smaller than this (in meters) are considered an asteroid, not a planet
+local ASTEROID_RADIUS = 950000 -- rocky planets smaller than this (in meters) are considered an asteroid, not a planet
 
 -- Return the icon used to display the given body
 -- If forWorld is true, returns an icon variant suitable
@@ -44,14 +44,14 @@ local function getBodyIcon(body, forWorld)
 	elseif st == "STAR" then
 		return icons.sun
 	elseif st == "ROCKY_PLANET" then
+		if t == "PLANET_ASTEROID" or sb.radius < ASTEROID_RADIUS then
+			return icons.asteroid_hollow
+		end
+
 		if sb.isMoon then
 			return icons.moon
 		else
-			if sb.radius < ASTEROID_RADIUS then
-				return icons.asteroid_hollow
-			else
-				return icons.rocky_planet
-			end
+			return icons.rocky_planet
 		end
 	elseif sb == body then
 		print("getBodyIcon(): not sure how to process systembody, supertype: " .. (st and st or "nil") .. ", type: " .. (t and t or "nil"))
