@@ -149,10 +149,10 @@ ui.Format = {
 		end
 		return result
 	end,
-	Distance = function(distance)
+	Distance = function(distance, fractional)
 		local d = math.abs(distance)
 		if d < 1000 then
-			return math.floor(distance), lc.UNIT_METERS
+			return (fractional and string.format("%0.2f", distance) or math.floor(distance)), lc.UNIT_METERS
 		end
 		if d < 1000*1000 then
 			return string.format("%0.2f", distance / 1000), lc.UNIT_KILOMETERS
@@ -162,10 +162,10 @@ ui.Format = {
 		end
 		return string.format("%0.2f", distance / 1.4960e11), lc.UNIT_AU
 	end,
-	Speed = function(distance)
+	Speed = function(distance, fractional)
 		local d = math.abs(distance)
 		if d < 1000 then
-			return math.floor(distance), lc.UNIT_METERS_PER_SECOND
+			return (fractional and string.format("%0.2f", distance) or math.floor(distance)), lc.UNIT_METERS_PER_SECOND
 		end
 		if d < 1000*1000 then
 			return string.format("%0.2f", distance / 1000), lc.UNIT_KILOMETERS_PER_SECOND
@@ -206,15 +206,16 @@ ui.Format = {
 	Pressure = function(pres)
 		return string.format("%0.2f", pres) .. lc.UNIT_PRESSURE_ATMOSPHERES
 	end,
+	-- round numbers
 	Number = function(number, places)
-		local s = number < 0.0 and "-" or ""
-		number = math.abs(number)
-		local fmt = "%." .. (places or '2') .. "f%s"
-		if number < 1e3 then return s .. number
-		elseif number < 1e6 then return s .. math.floor(number / 1e3) .. "," .. number % 1e3
-		elseif number < 1e9 then return s .. fmt:format(number / 1e6, "mil")
-		elseif number < 1e12 then return s .. fmt:format(number / 1e9, "bil")
-		else return s .. fmt:format(number / 1e12, "trn") end
+		number = math.round(number)
+		local n = math.abs(number)
+		local fmt = "%." .. (places or '2') .. "f"
+		if n < 1e3 then return string.format("%0.0f", number)
+		elseif n < 1e6 then return string.format("%0.0f", number / 1e3) .. "," .. string.format("%03.0f", n % 1e3)
+		elseif n < 1e9 then return fmt:format(number / 1e6) .. "mil"
+		elseif n < 1e12 then return fmt:format(number / 1e9) .. "bil"
+		else return fmt:format(number / 1e12) .. "trn" end
 	end,
 	SystemPath = function(path)
 		return path:GetStarSystem().name.." ("..path.sectorX..", "..path.sectorY..", "..path.sectorZ..")"
