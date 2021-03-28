@@ -149,10 +149,10 @@ ui.Format = {
 		end
 		return result
 	end,
-	Distance = function(distance)
+	Distance = function(distance, fractional)
 		local d = math.abs(distance)
 		if d < 1000 then
-			return math.floor(distance), lc.UNIT_METERS
+			return (fractional and string.format("%0.2f", distance) or math.floor(distance)), lc.UNIT_METERS
 		end
 		if d < 1000*1000 then
 			return string.format("%0.2f", distance / 1000), lc.UNIT_KILOMETERS
@@ -162,10 +162,10 @@ ui.Format = {
 		end
 		return string.format("%0.2f", distance / 1.4960e11), lc.UNIT_AU
 	end,
-	Speed = function(distance)
+	Speed = function(distance, fractional)
 		local d = math.abs(distance)
 		if d < 1000 then
-			return math.floor(distance), lc.UNIT_METERS_PER_SECOND
+			return (fractional and string.format("%0.2f", distance) or math.floor(distance)), lc.UNIT_METERS_PER_SECOND
 		end
 		if d < 1000*1000 then
 			return string.format("%0.2f", distance / 1000), lc.UNIT_KILOMETERS_PER_SECOND
@@ -206,6 +206,7 @@ ui.Format = {
 	Pressure = function(pres)
 		return string.format("%0.2f", pres) .. lc.UNIT_PRESSURE_ATMOSPHERES
 	end,
+	-- round numbers
 	Number = function(number, places)
 		local s = number < 0.0 and "-" or ""
 		number = math.abs(number)
