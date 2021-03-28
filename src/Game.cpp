@@ -738,7 +738,6 @@ ObjectViewerView *Game::GetObjectViewerView() const
 
 Game::Views::Views() :
 	m_sectorView(nullptr),
-	m_systemInfoView(nullptr),
 	m_systemView(nullptr),
 	m_worldView(nullptr),
 	m_deathView(nullptr),
@@ -751,7 +750,6 @@ void Game::Views::SetRenderer(Graphics::Renderer *r)
 	// view manager will handle setting this probably
 	m_infoView->SetRenderer(r);
 	m_sectorView->SetRenderer(r);
-	m_systemInfoView->SetRenderer(r);
 	m_systemView->SetRenderer(r);
 	m_worldView->SetRenderer(r);
 	m_deathView->SetRenderer(r);
@@ -766,7 +764,6 @@ void Game::Views::Init(Game *game)
 	m_sectorView = new SectorView(game);
 	m_worldView = new WorldView(game);
 	m_systemView = new SystemView(game);
-	m_systemInfoView = new PiGuiView("SystemInfoView");
 	m_spaceStationView = new PiGuiView("StationView");
 	m_infoView = new PiGuiView("InfoView");
 	m_deathView = new DeathView(game);
@@ -784,7 +781,6 @@ void Game::Views::LoadFromJson(const Json &jsonObj, Game *game)
 	m_worldView = new WorldView(jsonObj, game);
 
 	m_systemView = new SystemView(game);
-	m_systemInfoView = new PiGuiView("SystemInfoView");
 	m_spaceStationView = new PiGuiView("StationView");
 	m_infoView = new PiGuiView("InfoView");
 	m_deathView = new DeathView(game);
@@ -805,7 +801,6 @@ Game::Views::~Views()
 	delete m_deathView;
 	delete m_infoView;
 	delete m_spaceStationView;
-	delete m_systemInfoView;
 	delete m_systemView;
 	delete m_worldView;
 	delete m_sectorView;
