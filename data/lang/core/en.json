@@ -1703,9 +1703,33 @@
     "description": "Duration unit: one second",
     "message": "s"
   },
+  "UNIT_KILOGRAMS": {
+    "description": "Mass unit: one kilogram (kg)",
+    "message": "kg"
+  },
   "UNIT_TONNES": {
     "description": "Mass unit: one tonne (t)",
     "message": "t"
+  },
+  "UNIT_KILOTONNES": {
+    "description": "Mass unit: one kilotonne (kt)",
+    "message": "kt"
+  },
+  "UNIT_MEGATONNES": {
+    "description": "Mass unit: one megatonne (Mt)",
+    "message": "Mt"
+  },
+  "UNIT_GIGATONNES": {
+    "description": "Mass unit: one gigatonne (Gt)",
+    "message": "Gt"
+  },
+  "UNIT_TERATONNES": {
+    "description": "Mass unit: one teratonne (Tt)",
+    "message": "Tt"
+  },
+  "UNIT_PETATONNES": {
+    "description": "Mass unit: one petatonne (Pt)",
+    "message": "Pt"
   },
   "UNIT_WEEKS": {
     "description": "Duration unit: one 7-day week",
