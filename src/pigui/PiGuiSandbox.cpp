@@ -109,16 +109,17 @@ static int l_stack_cleanup(lua_State *L)
 {
 	using std::to_string;
 	auto *stackInfo = static_cast<SavedImguiStackInfo *>(luaL_checkudata(L, 1, SavedImguiStackInfo::meta_name));
+	// Fonts and styles must be cleaned up before ending windows
 	std::array<int, 3> resetNum = {
-		CleanupWindowStack(stackInfo),
+		CleanupFontStack(stackInfo),
 		CleanupStyleStack(stackInfo),
-		CleanupFontStack(stackInfo)
+		CleanupWindowStack(stackInfo)
 	};
 	lua_pop(L, 1);
 
 	if (resetNum[0] || resetNum[1] || resetNum[2]) {
 		std::string errormsg =
-			"Cleaned up " + to_string(resetNum[0]) + " windows, " + to_string(resetNum[1]) + " styles, and " + to_string(resetNum[2]) + " fonts.\n";
+			"Cleaned up " + to_string(resetNum[2]) + " windows, " + to_string(resetNum[1]) + " styles, and " + to_string(resetNum[0]) + " fonts.\n";
 
 		lua_pushstring(L, errormsg.c_str());
 	} else {
