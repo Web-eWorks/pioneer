@@ -78,7 +78,6 @@ static Type parse_imgui_enum(lua_State *l, int index, LuaFlags<Type> lookupTable
 
 void *pi_lua_checklightuserdata(lua_State *l, int index)
 {
-	PROFILE_SCOPED()
 	if (lua_islightuserdata(l, index))
 		return lua_touserdata(l, index);
 	else
@@ -88,14 +87,12 @@ void *pi_lua_checklightuserdata(lua_State *l, int index)
 
 void pi_lua_generic_pull(lua_State *l, int index, ImVec2 &vec)
 {
-	PROFILE_SCOPED()
 	vector2d tr = LuaPull<vector2d>(l, index);
 	vec = ImVec2(tr.x, tr.y);
 }
 
 void pi_lua_generic_push(lua_State *l, const ImVec2 &vec)
 {
-	PROFILE_SCOPED()
 	LuaPush(l, vector2d(vec.x, vec.y));
 }
 
@@ -127,14 +124,12 @@ static LuaFlags<ImGuiSelectableFlags_> imguiSelectableFlagsTable = {
 
 void pi_lua_generic_pull(lua_State *l, int index, ImColor &color)
 {
-	PROFILE_SCOPED()
 	Color tr = LuaPull<Color>(l, index);
 	color = ImColor(tr.r, tr.g, tr.b, tr.a);
 }
 
 void pi_lua_generic_pull(lua_State *l, int index, ImGuiSelectableFlags_ &theflags)
 {
-	PROFILE_SCOPED()
 	theflags = parse_imgui_flags(l, index, imguiSelectableFlagsTable);
 }
 
@@ -162,7 +157,6 @@ static LuaFlags<ImGuiTreeNodeFlags_> imguiTreeNodeFlagsTable = {
 
 void pi_lua_generic_pull(lua_State *l, int index, ImGuiTreeNodeFlags_ &theflags)
 {
-	PROFILE_SCOPED()
 	theflags = parse_imgui_flags(l, index, imguiTreeNodeFlagsTable);
 }
 
@@ -195,7 +189,6 @@ static LuaFlags<ImGuiInputTextFlags_> imguiInputTextFlagsTable = {
 
 void pi_lua_generic_pull(lua_State *l, int index, ImGuiInputTextFlags_ &theflags)
 {
-	PROFILE_SCOPED()
 	theflags = parse_imgui_flags(l, index, imguiInputTextFlagsTable);
 }
 
@@ -216,7 +209,6 @@ static LuaFlags<ImGuiCond_> imguiSetCondTable = {
 
 void pi_lua_generic_pull(lua_State *l, int index, ImGuiCond_ &value)
 {
-	PROFILE_SCOPED()
 	value = parse_imgui_enum(l, index, imguiSetCondTable);
 }
 
@@ -275,7 +267,6 @@ static LuaFlags<ImGuiCol_> imguiColTable = {
 
 void pi_lua_generic_pull(lua_State *l, int index, ImGuiCol_ &value)
 {
-	PROFILE_SCOPED()
 	value = parse_imgui_enum(l, index, imguiColTable);
 }
 
@@ -304,7 +295,6 @@ static LuaFlags<ImGuiStyleVar_> imguiStyleVarTable = {
 
 void pi_lua_generic_pull(lua_State *l, int index, ImGuiStyleVar_ &value)
 {
-	PROFILE_SCOPED()
 	value = parse_imgui_enum(l, index, imguiStyleVarTable);
 }
 
@@ -329,7 +319,6 @@ static LuaFlags<ImGuiWindowFlags_> imguiWindowFlagsTable = {
 
 void pi_lua_generic_pull(lua_State *l, int index, ImGuiWindowFlags_ &theflags)
 {
-	PROFILE_SCOPED()
 	theflags = parse_imgui_flags(l, index, imguiWindowFlagsTable);
 }
 
@@ -355,7 +344,6 @@ static LuaFlags<ImGuiHoveredFlags_> imguiHoveredFlagsTable = {
 
 void pi_lua_generic_pull(lua_State *l, int index, ImGuiHoveredFlags_ &theflags)
 {
-	PROFILE_SCOPED()
 	theflags = parse_imgui_flags(l, index, imguiHoveredFlagsTable);
 }
 
@@ -1344,7 +1332,6 @@ static int l_pigui_add_triangle_filled(lua_State *l)
  */
 static int l_pigui_same_line(lua_State *l)
 {
-	PROFILE_SCOPED()
 	double pos_x = LuaPull<double>(l, 1);
 	double spacing_w = LuaPull<double>(l, 2);
 	ImGui::SameLine(pos_x, spacing_w);
@@ -1388,14 +1375,12 @@ static int l_pigui_end_group(lua_State *l)
  */
 static int l_pigui_separator(lua_State *l)
 {
-	PROFILE_SCOPED()
 	ImGui::Separator();
 	return 0;
 }
 
 static int l_pigui_spacing(lua_State *l)
 {
-	PROFILE_SCOPED()
 	ImGui::Spacing();
 	return 0;
 }
@@ -1445,6 +1430,13 @@ static int l_pigui_begin_popup_modal(lua_State *l)
 	return 1;
 }
 
+static int l_pigui_end_popup(lua_State *l)
+{
+	PROFILE_SCOPED()
+	ImGui::EndPopup();
+	return 0;
+}
+
 static int l_pigui_open_popup(lua_State *l)
 {
 	PROFILE_SCOPED()
@@ -1462,16 +1454,8 @@ static int l_pigui_close_current_popup(lua_State *l)
 
 static int l_pigui_is_any_popup_open(lua_State *l)
 {
-	PROFILE_SCOPED()
 	LuaPush<bool>(l, !ImGui::GetCurrentContext()->OpenPopupStack.empty());
 	return 1;
-}
-
-static int l_pigui_end_popup(lua_State *l)
-{
-	PROFILE_SCOPED()
-	ImGui::EndPopup();
-	return 0;
 }
 
 static int l_pigui_begin_child(lua_State *l)
@@ -1590,7 +1574,6 @@ static int l_pigui_calc_text_size(lua_State *l)
 
 static int l_pigui_get_mouse_pos(lua_State *l)
 {
-	PROFILE_SCOPED()
 	ImVec2 pos = ImGui::GetMousePos();
 	LuaPush(l, vector2d(pos.x, pos.y));
 	return 1;
@@ -1598,7 +1581,6 @@ static int l_pigui_get_mouse_pos(lua_State *l)
 
 static int l_pigui_get_mouse_wheel(lua_State *l)
 {
-	PROFILE_SCOPED()
 	float wheel = ImGui::GetIO().MouseWheel;
 	LuaPush(l, wheel);
 	return 1;
@@ -1677,7 +1659,6 @@ static int l_pigui_pop_id(lua_State *l)
 
 static int l_pigui_get_window_pos(lua_State *l)
 {
-	PROFILE_SCOPED()
 	ImVec2 pos = ImGui::GetWindowPos();
 	LuaPush<vector2d>(l, vector2d(pos.x, pos.y));
 	return 1;
@@ -1685,7 +1666,6 @@ static int l_pigui_get_window_pos(lua_State *l)
 
 static int l_pigui_get_window_size(lua_State *l)
 {
-	PROFILE_SCOPED()
 	ImVec2 ws = ImGui::GetWindowSize();
 	LuaPush<vector2d>(l, vector2d(ws.x, ws.y));
 	return 1;
@@ -1693,7 +1673,6 @@ static int l_pigui_get_window_size(lua_State *l)
 
 static int l_pigui_get_content_region(lua_State *l)
 {
-	PROFILE_SCOPED()
 	ImVec2 cra = ImGui::GetContentRegionAvail();
 	LuaPush<vector2d>(l, vector2d(cra.x, cra.y));
 	return 1;
@@ -2098,59 +2077,49 @@ static int l_pigui_should_show_labels(lua_State *l)
 
 static int l_attr_handlers(lua_State *l)
 {
-	PROFILE_SCOPED()
 	PiGui::GetHandlers().PushCopyToStack();
 	return 1;
 }
 
 static int l_attr_keys(lua_State *l)
 {
-	PROFILE_SCOPED()
-	// PiGui::Instance *pigui = LuaObject<PiGui::Instance>::CheckFromLua(1);
 	PiGui::GetKeys().PushCopyToStack();
+	return 1;
+}
+
+static int l_attr_screen_height(lua_State *l)
+{
+	LuaPush<int>(l, Graphics::GetScreenHeight());
 	return 1;
 }
 
 static int l_attr_screen_width(lua_State *l)
 {
-	PROFILE_SCOPED()
 	LuaPush<int>(l, Graphics::GetScreenWidth());
 	return 1;
 }
 
 static int l_attr_key_ctrl(lua_State *l)
 {
-	PROFILE_SCOPED()
 	LuaPush<bool>(l, ImGui::GetIO().KeyCtrl);
 	return 1;
 }
 
 static int l_attr_key_none(lua_State *l)
 {
-	PROFILE_SCOPED()
 	LuaPush<bool>(l, !ImGui::GetIO().KeyCtrl & !ImGui::GetIO().KeyShift & !ImGui::GetIO().KeyAlt);
 	return 1;
 }
 
 static int l_attr_key_shift(lua_State *l)
 {
-	PROFILE_SCOPED()
 	LuaPush<bool>(l, ImGui::GetIO().KeyShift);
 	return 1;
 }
 
 static int l_attr_key_alt(lua_State *l)
 {
-	PROFILE_SCOPED()
 	LuaPush<bool>(l, ImGui::GetIO().KeyAlt);
-	return 1;
-}
-
-static int l_attr_screen_height(lua_State *l)
-{
-	PROFILE_SCOPED()
-	//	PiGui::Instance *pigui = LuaObject<PiGui::Instance>::CheckFromLua(1);
-	LuaPush<int>(l, Graphics::GetScreenHeight());
 	return 1;
 }
 
