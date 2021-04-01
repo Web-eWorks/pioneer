@@ -400,6 +400,21 @@ void LuaObjectBase::CreateClass(LuaMetaTypeBase *metaType)
 	// Get the method table from the metatype
 	metaType->GetMetatable();
 	lua_getfield(l, -1, "methods");
+
+	// if we have a __ctor entry, set it up as the public call constructor.
+	// require 'Module.Name' returns the method table, so we need to add
+	// a call metamethod to that table.
+	lua_getfield(l, -2, "__ctor");
+	if (!lua_isnil(l, -1)) {
+		// methods table, __ctor
+		lua_newtable(l);
+		lua_pushvalue(l, -2);
+		// methods table, __ctor, metatable, __ctor
+		lua_setfield(l, -2, "__call");
+		lua_setmetatable(l, -3);
+	}
+	lua_pop(l, 1);
+
 	lua_remove(l, -2); // "global" table, type name, methods table
 
 	// add the exists method
