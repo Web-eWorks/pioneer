@@ -25,6 +25,10 @@ local function infoButton(icon, selected, tooltip, color)
     return ui.coloredSelectedIconButton(icon, mainButtonSize, selected, mainButtonFramePadding, colors.buttonBlue, color, tooltip)
 end
 
+local function drawTabWindow(self, fn)
+	return fn()
+end
+
 function PiGuiTabView.New(viewName)
     local self = {
         name = viewName,
@@ -32,7 +36,8 @@ function PiGuiTabView.New(viewName)
 		viewCount = 0,
 		isActive = false,
 		tabs = {},
-		windowPadding = Vector2(0)
+		windowPadding = Vector2(0),
+		renderTab = drawTabWindow
     }
 
     setmetatable(self, {
@@ -79,6 +84,7 @@ function PiGuiTabView:SwitchTo(id)
 end
 
 local staticButtonFlags = ui.WindowFlags {"NoResize", "NoTitleBar", "NoMove", "NoFocusOnAppearing", "NoScrollbar"}
+local mainWindowFlags = ui.WindowFlags {"NoResize", "NoTitleBar"}
 
 function PiGuiTabView.renderTabView(self)
 	local wasActive = self.isActive
@@ -103,9 +109,11 @@ function PiGuiTabView.renderTabView(self)
             }, function()
                 ui.setNextWindowPos(self.viewWindowPos, "Always")
                 ui.setNextWindowSize(self.viewWindowSize, "Always")
-				ui.window("StationView", {"NoResize", "NoTitleBar"}, function()
-					local ok, err = ui.pcall(tab.draw, tab)
-					if not ok then logWarning(err); tab.showView = false end
+				ui.window("StationView", mainWindowFlags, function()
+					self:renderTab(function()
+						local ok, err = ui.pcall(tab.draw, tab)
+						if not ok then logWarning(err); tab.showView = false end
+					end)
 				end)
             end)
         end)
