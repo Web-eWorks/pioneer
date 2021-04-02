@@ -15,7 +15,7 @@ local textBackgroundMarginPixels = 2
 
 -- apply a subtle bias to prevent fonts from becoming overly tiny at small resolutions
 local function fontScale(size)
-	return math.round(size * (font_factor * 0.9 + 0.1))
+	return math.round(size * (font_factor * 0.8 + 0.2))
 end
 
 ui.fonts = {
@@ -28,11 +28,11 @@ ui.fonts = {
 	pionillium = {
 		xlarge	= { name = "pionillium", size = fontScale(36), offset = fontScale(24) },
 		large	= { name = "pionillium", size = fontScale(30), offset = fontScale(24) },
-		medlarge = { name = "pionillium", size = fontScale(24), offset = fontScale(18) },
+		medlarge = { name = "pionillium", size = fontScale(22), offset = fontScale(18) },
 		medium	= { name = "pionillium", size = fontScale(18), offset = fontScale(14) },
 		-- 		medsmall = { name = "pionillium", size = 15, offset = 12 },
 		small	= { name = "pionillium", size = fontScale(14), offset = fontScale(11) },
-		tiny	= { name = "pionillium", size = fontScale(8), offset = fontScale(7) },
+		tiny	= { name = "pionillium", size = fontScale(10), offset = fontScale(7) },
 	},
 	orbiteer = {
 		xlarge	= { name = "orbiteer", size = fontScale(36), offset = fontScale(24) },
@@ -40,7 +40,7 @@ ui.fonts = {
 		medlarge = { name = "orbiteer", size = fontScale(24), offset = fontScale(20) },
 		medium	= { name = "orbiteer", size = fontScale(20), offset = fontScale(16) },
 		small	= { name = "orbiteer", size = fontScale(14), offset = fontScale(11) },
-		tiny	= { name = "orbiteer", size = fontScale(8), offset = fontScale(7) },
+		tiny	= { name = "orbiteer", size = fontScale(10), offset = fontScale(7) },
 	},
 }
 
@@ -98,7 +98,7 @@ ui.Format = {
 		local result = ""
 		if i > 0 then
 			if weeks ~= 0 then
-				result = result .. weeks .. "w"
+				result = result .. weeks .. "w "
 				count = true
 			end
 			if count then
@@ -107,7 +107,7 @@ ui.Format = {
 		end
 		if i > 0 then
 			if days ~= 0 then
-				result = result .. days .. "d"
+				result = result .. days .. "d "
 				count = true
 			end
 			if count then
@@ -116,7 +116,7 @@ ui.Format = {
 		end
 		if i > 0 then
 			if hours ~= 0 then
-				result = result .. hours .. "h"
+				result = result .. hours .. "h "
 				count = true
 			end
 			if count then
@@ -125,7 +125,7 @@ ui.Format = {
 		end
 		if i > 0 then
 			if minutes ~= 0 then
-				result = result .. minutes .. "m"
+				result = result .. minutes .. "m "
 				count = true
 			end
 			if count then
@@ -134,7 +134,7 @@ ui.Format = {
 		end
 		if i > 0 then
 			if seconds ~= 0 then
-				result = result .. seconds .. "s"
+				result = result .. seconds .. "s "
 				count = true
 			end
 			if result == "" then
@@ -147,7 +147,7 @@ ui.Format = {
 		if negative then
 			result = "-" .. result
 		end
-		return result
+		return string.trim(result)
 	end,
 	Distance = function(distance, fractional)
 		local d = math.abs(distance)
@@ -211,8 +211,8 @@ ui.Format = {
 		number = math.round(number)
 		local n = math.abs(number)
 		local fmt = "%." .. (places or '2') .. "f"
-		if n < 1e3 then return string.format("%0.0f", number)
-		elseif n < 1e6 then return string.format("%0.0f", number / 1e3) .. "," .. string.format("%03.0f", n % 1e3)
+		if n < 1e3 then return string.format("%d", number)
+		elseif n < 1e6 then return string.format("%d", number / 1e3) .. "," .. string.format("%03d", n % 1e3)
 		elseif n < 1e9 then return fmt:format(number / 1e6) .. "mil"
 		elseif n < 1e12 then return fmt:format(number / 1e9) .. "bil"
 		else return fmt:format(number / 1e12) .. "trn" end
