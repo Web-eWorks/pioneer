@@ -14,7 +14,8 @@ local l = Lang.GetResource("module-donatetocranks")
 local flavours = {}
 for i = 0,5 do
 	table.insert(flavours, {
-		title     = l["FLAVOUR_" .. i .. "_TITLE"],
+		title     = l["FLAVOUR_" .. i .. "_ADTITLE"],
+		desc      = l["FLAVOUR_" .. i .. "_DESC"],
 		message   = l["FLAVOUR_" .. i .. "_MESSAGE"],
 	})
 end
@@ -23,7 +24,6 @@ local ads = {}
 
 
 local addReputation = function (money, character)
-	local test = istest or false
 	local char = character or Character.persistent.player
 	local curRep = char.reputation
 	local newRep
@@ -108,14 +108,16 @@ local onCreateBB = function (station)
 
 	local ad = {
 		modifier = n == 6 and 1.5 or 1.0, -- donating to FOSS is twice as good
-		title    = flavours[n].title,
+		title    = flavours[n].desc,
 		message  = flavours[n].message,
 		station  = station,
 		character = Character.New({armour=false}),
+		n        = n
 	}
 
 	local ref = station:AddAdvert({
-		description = ad.title,
+		title       = flavours[n].title,
+		description = flavours[n].desc,
 		icon        = "donate_to_cranks",
 		onChat      = onChat,
 		onDelete    = onDelete})
@@ -131,7 +133,8 @@ local onGameStart = function ()
 
 	for k,ad in pairs(loaded_data.ads) do
 		local ref = ad.station:AddAdvert({
-			description = ad.title,
+			title       = flavours[ad.n].title,
+			description = flavours[ad.n].desc,
 			icon        = "donate_to_cranks",
 			onChat      = onChat,
 			onDelete    = onDelete})
