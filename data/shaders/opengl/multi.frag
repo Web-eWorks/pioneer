@@ -99,7 +99,8 @@ void getSurface(inout Surface surf)
 
 void main(void)
 {
-	Surface surface;
+	// initialize here to prevent warnings about possibly-unused variables
+	Surface surface = Surface(vec4(1.0), vec3(1.0), 100.0, vec3(0, 0, 1), vec3(0), 1.0);
 	getSurface(surface);
 
 #ifdef ALPHA_TEST
