@@ -83,6 +83,7 @@ public:
 	friend vector2 operator*(const T &a, const vector2 &v) { return v * a; }
 	friend vector2 operator*(const vector2 &va, const vector2 &vb) { return vector2(va.x * vb.x, va.y * vb.y); }
 	friend vector2 operator/(const vector2 &v, const T &a) { return vector2(v.x / a, v.y / a); }
+	friend vector2 operator/(const vector2 &v, const vector2 &v2) { return vector2(v.x / v2.x, v.y / v2.y); }
 	friend bool operator<(const vector2 &va, const vector2 &vb) { return va.LengthSqr() < vb.LengthSqr(); }
 
 	T Length() const { return sqrt(x * x + y * y); }

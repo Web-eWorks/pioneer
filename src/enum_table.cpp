@@ -86,9 +86,10 @@ const struct EnumItem ENUM_ShipAICmdName[] = {
 	{ 0, 0 },
 };
 
-const struct EnumItem ENUM_DualLaserOrientation[] = {
-	{ "HORIZONTAL", int(ShipType::DUAL_LASERS_HORIZONTAL) },
-	{ "VERTICAL", int(ShipType::DUAL_LASERS_VERTICAL) },
+const struct EnumItem ENUM_HardpointTag[] = {
+	{ "Gun", int(ShipType::HardpointTag::Gun) },
+	{ "Ordnance", int(ShipType::HardpointTag::Ordnance) },
+	{ "Utility", int(ShipType::HardpointTag::Utility) },
 	{ 0, 0 },
 };
 
@@ -293,7 +294,7 @@ const struct EnumTable ENUM_TABLES[] = {
 	{ "ShipJumpStatus", ENUM_ShipJumpStatus },
 	{ "ShipAlertStatus", ENUM_ShipAlertStatus },
 	{ "ShipAICmdName", ENUM_ShipAICmdName },
-	{ "DualLaserOrientation", ENUM_DualLaserOrientation },
+	{ "HardpointTag", ENUM_HardpointTag },
 	{ "ShipTypeTag", ENUM_ShipTypeTag },
 	{ "DockingRefusedReason", ENUM_DockingRefusedReason },
 	{ "ProjectableTypes", ENUM_ProjectableTypes },
@@ -320,7 +321,7 @@ const struct EnumTable ENUM_TABLES_PUBLIC[] = {
 	{ "ShipJumpStatus", ENUM_ShipJumpStatus },
 	{ "ShipAlertStatus", ENUM_ShipAlertStatus },
 	{ "ShipAICmdName", ENUM_ShipAICmdName },
-	{ "DualLaserOrientation", ENUM_DualLaserOrientation },
+	{ "HardpointTag", ENUM_HardpointTag },
 	{ "ShipTypeTag", ENUM_ShipTypeTag },
 	{ "DockingRefusedReason", ENUM_DockingRefusedReason },
 	{ "ProjectableTypes", ENUM_ProjectableTypes },

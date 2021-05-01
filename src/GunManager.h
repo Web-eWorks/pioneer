@@ -40,6 +40,7 @@ public:
 		// float powerOverclock = 1.0; // boost to overall firerate (and corresponding increase in heat generation)
 
 		vector3f currentLeadDir;
+		vector3d currentLeadPos;
 
 		RefCountedPtr<GunData> gunData; // static information about the model of gun
 	};
@@ -76,6 +77,7 @@ private:
 	struct GunMount {
 		vector3d pos;
 		vector3d dir;
+		vector2f traverseTan; // tangent of the traverse
 		const ShipType::HardpointInfo *hardpoint;
 	};
 
@@ -83,14 +85,15 @@ private:
 	void Fire(uint32_t num);
 
 	// Calculate the position a given gun should aim at to hit the current target body
-	// This is effectively the position of the target at T+n, factoring in an approximation
-	// of the observed acceleration of the target
-	void CalcGunLead(GunState *state, vector3d position, vector3d relativeVelocity, vector3d relativeAcceleration);
+	// This is effectively the position of the target at T+n
+	void CalcGunLead(GunState *state, vector3d position, vector3d relativeVelocity);
 
 	std::vector<GunState> m_mountedGuns;
 	// XXX this should be part of ShipType, but need to further investigate dependency on
 	// SceneGraph in that system's init (loading model structure separately from loading mesh data)
 	std::vector<GunMount> m_gunMounts;
+
+	sigc::connection m_targetDestroyedCallback;
 	DynamicBody *m_parent = nullptr;
 	Body *m_targetBody = nullptr;
 	bool m_isAnyFiring = false;

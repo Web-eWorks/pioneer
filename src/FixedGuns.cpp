@@ -190,7 +190,8 @@ bool FixedGuns::Fire(int num, Body *b)
 	m_temperature_stat[num] += m_gun[num].temp_heat_rate;
 	m_recharge_stat[num] = m_gun[num].recharge;
 
-	const matrix3x3d leadRot = m_shouldUseLeadCalc ? Quaterniond(m_currentLeadDir).ToMatrix3x3<double>() : matrix3x3d::Identity();
+	const vector3d forwardVector = num == GUN_REAR ? vector3d(0, 0, 1) : vector3d(0, 0, -1);
+	const matrix3x3d leadRot = m_shouldUseLeadCalc ? Quaterniond(m_currentLeadDir, forwardVector).ToMatrix3x3<double>() : matrix3x3d::Identity();
 
 	const int maxBarrels = std::min(size_t(m_gun[num].dual ? 2 : 1), m_gun[num].locs.size());
 
@@ -259,13 +260,7 @@ void FixedGuns::UpdateLead(float timeStep, int num, Body *ship, Body *target)
 	}
 
 	const vector3d targetDir = m_targetLeadPos.Normalized();
-	const vector3d gunLeadTarget = (targetDir.Dot(forwardVector) >= cos(MAX_LEAD_ANGLE)) ? targetDir : forwardVector;
-	// FIXME: for some unearthly reason, pointing directly at the lead target causes projectiles to overshoot by 2x
-	// So we just interpolate by exactly half and it works perfectly. This is a pretty benign hack, all considered.
-	Quaterniond interpTarget = Quaterniond::Slerp(Quaterniond(gunLeadTarget), Quaterniond(forwardVector), 0.5);
-
-	double angle;
-	interpTarget.GetAxisAngle(angle, m_currentLeadDir);
+	m_currentLeadDir = (targetDir.Dot(forwardVector) >= cos(MAX_LEAD_ANGLE)) ? targetDir : forwardVector;
 }
 
 float FixedGuns::GetGunTemperature(int idx) const

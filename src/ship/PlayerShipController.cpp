@@ -223,9 +223,14 @@ void PlayerShipController::StaticUpdate(const float timeStep)
 
 		// TODO: this is a bit monkey-patched, but calling from SetFlightControlState doesn't properly clear the mouse capture state.
 		// Do it here so we properly react to becoming docked while holding the mouse button down
-		if (m_ship->GetFlightState() == Ship::DOCKED && m_mouseActive) {
-			Pi::input->SetCapturingMouse(false);
-			m_mouseActive = false;
+		if ((m_ship->GetFlightState() == Ship::DOCKED || m_ship->GetFlightState() == Ship::LANDED)) {
+			if (m_mouseActive) {
+				Pi::input->SetCapturingMouse(false);
+				m_mouseActive = false;
+			}
+
+			if (m_ship->GetComponent<GunManager>()->IsFiring())
+				m_ship->GetComponent<GunManager>()->StopFiringAllGuns();
 		}
 	}
 
@@ -273,9 +278,6 @@ void PlayerShipController::PollControls(const float timeStep, const bool force_r
 	if (m_controlsLocked) return;
 
 	m_ship->ClearThrusterState();
-	m_ship->GetComponent<GunManager>()->StopFiringAllGuns();
-	m_ship->SetGunState(0, 0);
-	m_ship->SetGunState(1, 0);
 
 	// vector3d wantAngVel(0.0);
 	double angThrustSoftness = 10.0;
@@ -345,11 +347,21 @@ void PlayerShipController::PollControls(const float timeStep, const bool force_r
 	if (InputBindings.thrustLeft->IsActive())
 		m_ship->SetThrusterState(0, -linearThrustPower * InputBindings.thrustLeft->GetValue());
 
+	auto gunManager = m_ship->GetComponent<GunManager>();
 	if (InputBindings.primaryFire->IsActive() || (Pi::input->MouseButtonState(SDL_BUTTON_LEFT) && Pi::input->MouseButtonState(SDL_BUTTON_RIGHT))) {
 		//XXX worldview? madness, ask from ship instead
 		// FIXME: don't use GetActiveWeapon, instead figure out which weapon mounts are controlled from this view by testing their directions
 		m_ship->SetGunState(Pi::game->GetWorldView()->GetActiveWeapon(), 1);
-		m_ship->GetComponent<GunManager>()->SetGunFiring(0, true);
+
+		// TODO: track which gun mounts are allocated to this view and are activated by the player
+		for (size_t i = 0; i < gunManager->GetNumMounts(); i++)
+			gunManager->SetGunFiring(i, true);
+	} else {
+		if (gunManager->IsFiring())
+			gunManager->StopFiringAllGuns();
+
+		m_ship->SetGunState(0, 0);
+		m_ship->SetGunState(1, 0);
 	}
 
 	vector3d wantAngVel = vector3d(
@@ -396,10 +408,10 @@ void PlayerShipController::SetFlightControlState(FlightControlState s)
 		// Speed is set to the projection of the velocity onto the target.
 
 		vector3d shipVel = m_setSpeedTarget ?
-			// Ship's velocity with respect to the target, in current frame's coordinates
-			-m_setSpeedTarget->GetVelocityRelTo(m_ship) :
-			// Ship's velocity with respect to current frame
-			m_ship->GetVelocity();
+			  // Ship's velocity with respect to the target, in current frame's coordinates
+			  -m_setSpeedTarget->GetVelocityRelTo(m_ship) :
+			  // Ship's velocity with respect to current frame
+			  m_ship->GetVelocity();
 
 		// A change from Manual to Set Speed never sets a negative speed.
 		m_setSpeed = std::max(shipVel.Dot(-m_ship->GetOrient().VectorZ()), 0.0);
@@ -466,6 +478,7 @@ void PlayerShipController::SetCombatTarget(Body *const target, bool setSpeedTo)
 	if (setSpeedTo)
 		m_setSpeedTarget = target;
 	m_combatTarget = target;
+	m_ship->GetComponent<GunManager>()->SetTrackingTarget(target);
 	onChangeTarget.emit();
 }
 

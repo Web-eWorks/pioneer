@@ -30,14 +30,23 @@ public:
 		y = axis.y * sinHalfAng;
 		z = axis.z * sinHalfAng;
 	}
-	// from axis, assume angle == PI
-	// optimized fast path using sin(PI/2) = 1
-	Quaternion(vector3<T> axis)
+	// Create quaternion from normalized direction vectors.
+	// This creates a quaternion representing the rotation from the second
+	// unit direction vector to the first unit direction vector.
+	Quaternion(vector3<T> to, vector3<T> from = vector3<T>(0.0, 1.0, 0.0))
 	{
-		w = 0;
-		x = axis.x;
-		y = axis.y;
-		z = axis.z;
+		// Use half-angle trig identities to skip invoking trig functions
+		T cosAng = to.Dot(from);
+		// when to and from are equal (colinear), floating point error can cause
+		// this to become sqrt(-epsilon) without the std::max
+		T sinHalfAng = sqrt(std::max(1.0 - cosAng, 0.0) / 2.0);
+		// use the cross product to find the axis of rotation between the two vectors
+		vector3<T> rot = from.Cross(to).NormalizedSafe();
+
+		w = sqrt((1.0 + cosAng) / 2.0);
+		x = rot.x * sinHalfAng;
+		y = rot.y * sinHalfAng;
+		z = rot.z * sinHalfAng;
 	}
 	Quaternion(const Quaternion<other_float_t> &o) :
 		w(o.w),
@@ -90,6 +99,37 @@ public:
 		r.z = a.z * s;
 		return r;
 	}
+
+	// Quaternion-vector multiplication.
+	// Please don't use this. Seriously. Convert to a matrix first.
+	template <typename U>
+	vector3<U> operator*(const vector3<U> &rhs) const
+	{
+		vector3<U> v;
+		U xx = x * x;
+		U xy = x * y;
+		U xz = x * z;
+		U xw = x * w;
+
+		U yy = y * y;
+		U yz = y * z;
+		U yw = y * w;
+
+		U zz = z * z;
+		U zw = z * w;
+
+		U ww = w * w;
+
+		v.x = rhs.x * (xx + ww - yy - zz) + rhs.y * (2.0 * xy - 2.0 * zw) + rhs.z * (2.0 * xz + 2.0 * yw);
+		v.y = rhs.x * (2.0 * zw + 2.0 * xy) + rhs.y * (ww - xx + yy - zz) + rhs.z * (-2.0 * xw + 2.0 * yz);
+		v.z = rhs.x * (-2.0 * yw + 2.0 * xz) + rhs.y * (2.0 * xw + 2.0 * yz) + rhs.z * (ww - xx - yy + zz);
+		return v;
+	}
+
+	// vector * quaternion = inverse multiplication scam
+	template <typename U>
+	friend vector3<U> operator*(const vector3<U> &lhs, const Quaternion &rhs) { return ~rhs * lhs; }
+
 	friend Quaternion operator+(const Quaternion &a, const Quaternion &b)
 	{
 		Quaternion r;
