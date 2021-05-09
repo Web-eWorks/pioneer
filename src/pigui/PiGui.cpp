@@ -350,6 +350,31 @@ void Instance::Render()
 	}
 }
 
+void Instance::RenderToTexture(Graphics::RenderTarget *rt, std::vector<ImDrawList *> lists)
+{
+	ImDrawData drawData{};
+	drawData.Valid = true;
+	drawData.CmdLists = lists.data();
+	drawData.CmdListsCount = lists.size();
+
+	for (const auto *list : lists) {
+		drawData.TotalVtxCount += list->VtxBuffer.size();
+		drawData.TotalIdxCount += list->IdxBuffer.size();
+	}
+
+	drawData.DisplayPos = ImVec2(0.0f, 0.0f);
+	drawData.DisplaySize = ImVec2(rt->GetDesc().width, rt->GetDesc().height);
+	drawData.FramebufferScale = ImVec2(1.0f, 1.0f);
+
+	m_renderer->SetRenderTarget(rt);
+	m_renderer->ClearScreen();
+	m_renderer->FlushCommandBuffers();
+
+	ImGui_ImplOpenGL3_RenderDrawData(&drawData, true);
+
+	m_renderer->SetRenderTarget(nullptr);
+}
+
 void Instance::ClearFonts()
 {
 	PROFILE_SCOPED()
