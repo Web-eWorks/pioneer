@@ -1518,6 +1518,14 @@ static int l_pigui_is_mouse_clicked(lua_State *l)
 	return 1;
 }
 
+static int l_pigui_is_mouse_double_clicked(lua_State *l)
+{
+	PROFILE_SCOPED()
+	int button = LuaPull<int>(l, 1);
+	LuaPush(l, ImGui::IsMouseDoubleClicked(button));
+	return 1;
+}
+
 static int l_pigui_push_font(lua_State *l)
 {
 	PROFILE_SCOPED()
@@ -2869,6 +2877,7 @@ void LuaObject<PiGui::Instance>::RegisterClass()
 		{ "PopID", l_pigui_pop_id },
 		{ "IsMouseReleased", l_pigui_is_mouse_released },
 		{ "IsMouseClicked", l_pigui_is_mouse_clicked },
+		{ "IsMouseDoubleClicked", l_pigui_is_mouse_double_clicked },
 		{ "IsMouseDown", l_pigui_is_mouse_down },
 		{ "IsMouseHoveringRect", l_pigui_is_mouse_hovering_rect },
 		{ "IsWindowHovered", l_pigui_is_window_hovered },
