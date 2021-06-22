@@ -63,7 +63,6 @@ end
 -- Each entry will have { children_visible = true } if they are a parent of, or a selected object
 -- Entries that are excluded by the current filter will have { visible = false }
 ---@return table @ SystemBody entry
----@return boolean @ whether this entry is part of the chain of selected objects
 local function calculateEntry(systemBody, parent, selected, filter)
 	local result = nil
 	local is_target = selected[systemBody] or (systemBody.body and selected[systemBody.body]) or false
@@ -155,11 +154,11 @@ function SystemOverviewWidget:showEntry(entry, indent, selected, sortFunction)
 end
 
 function SystemOverviewWidget:drawControlButtons()
-	if ui.coloredSelectedIconButton(icons.moon, button_size, self.shouldShowMoons, frame_padding, bg_color, fg_color, lui.TOGGLE_OVERVIEW_SHOW_MOONS) then
+	if ui.theme.iconToggleButton(icons.moon, self.shouldShowMoons, lui.TOGGLE_OVERVIEW_SHOW_MOONS) then
 		self.shouldShowMoons = not self.shouldShowMoons
 	end
 	ui.sameLine()
-	if ui.coloredSelectedIconButton(icons.filter_stations, button_size, self.shouldShowStations, frame_padding, bg_color, fg_color, lui.TOGGLE_OVERVIEW_SHOW_STATIONS) then
+	if ui.theme.iconToggleButton(icons.filter_stations, self.shouldShowStations, lui.TOGGLE_OVERVIEW_SHOW_STATIONS) then
 		self.shouldShowStations = not self.shouldShowStations
 	end
 end

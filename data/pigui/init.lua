@@ -13,6 +13,6 @@ require 'pigui.libs.icons'
 require 'pigui.libs.buttons'
 require 'pigui.libs.radial-menu'
 require 'pigui.libs.gauge'
-
+require 'pigui.libs.theme-widgets'
 
 return ui

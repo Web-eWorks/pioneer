@@ -8,17 +8,13 @@ local Lang = require 'Lang'
 local ui = require 'pigui'
 local lui = Lang.GetResource("ui-core");
 
-local width_fraction = ui.rescaleUI(6, Vector2(1920, 1200))
+local icons = ui.theme.icons
+local button_size = ui.theme.sizes.iconButton
+local width_fraction = ui.rescaleUI(4.5)
 local height_fraction = 2
+local pivot = Vector2(1, 0)
 
 local systemOverview = require 'pigui.modules.system-overview-window'.New()
-
-local icons = ui.theme.icons
-
-local button_size = Vector2(32,32) * (ui.screenHeight / 1200)
-local frame_padding = 1
-local bg_color = ui.theme.colors.buttonBlue
-local fg_color = ui.theme.colors.white
 
 function systemOverview:onBodySelected(sbody, body)
 	Game.player:SetNavTarget(body)
@@ -30,7 +26,7 @@ function systemOverview:onBodyContextMenu(sbody, body)
 end
 
 function systemOverview:overrideDrawButtons()
-	if ui.coloredSelectedIconButton(icons.distance, button_size, self.shouldSortByPlayerDistance, frame_padding, bg_color, fg_color, lui.TOGGLE_OVERVIEW_SORT_BY_PLAYER_DISTANCE) then
+	if ui.theme.iconToggleButton(icons.distance, self.shouldSortByPlayerDistance, lui.TOGGLE_OVERVIEW_SORT_BY_PLAYER_DISTANCE) then
 		self.shouldSortByPlayerDistance = not self.shouldSortByPlayerDistance
 	end
 	ui.sameLine()
@@ -38,7 +34,7 @@ function systemOverview:overrideDrawButtons()
 	self:drawControlButtons()
 
 	ui.sameLine(ui.getWindowSize().x - (button_size.x + 10))
-	if ui.coloredSelectedIconButton(icons.system_overview, button_size, false, frame_padding, bg_color, fg_color, lui.TOGGLE_OVERVIEW_WINDOW) then
+	if ui.theme.iconButton(icons.system_overview, lui.TOGGLE_OVERVIEW_WINDOW) then
 		self.visible = false
 	end
 end
@@ -50,15 +46,15 @@ local function showInfoWindow()
 			systemOverview.visible = false
 		end
 		if not systemOverview.visible then
-			ui.setNextWindowPos(Vector2(ui.screenWidth - button_size.x * 3 - 10 , 10) , "Always")
+			ui.setNextWindowPos(Vector2(ui.screenWidth - 10 , 10) , "Always", pivot)
 			ui.window("SystemTargetsSmall", windowFlags, function()
-				if ui.coloredSelectedIconButton(icons.system_overview, button_size, false, frame_padding, bg_color, fg_color, lui.TOGGLE_OVERVIEW_WINDOW) then
+				if ui.theme.iconButton(icons.system_overview, lui.TOGGLE_OVERVIEW_WINDOW) then
 					systemOverview.visible = true
 				end
 			end)
 		else
 			ui.setNextWindowSize(Vector2(ui.screenWidth / width_fraction, ui.screenHeight / height_fraction) , "Always")
-			ui.setNextWindowPos(Vector2(ui.screenWidth - (ui.screenWidth / width_fraction) - 10 , 10) , "Always")
+			ui.setNextWindowPos(Vector2(ui.screenWidth - 10 , 10) , "Always", pivot)
 			ui.withStyleColorsAndVars({ WindowBg = ui.theme.colors.commsWindowBackground }, { WindowRounding = 0.0 }, function()
 				ui.window("SystemTargets", windowFlags, function()
 					ui.withFont(ui.fonts.pionillium.medium, function()
