@@ -131,6 +131,11 @@ void SystemView::ResetViewpoint()
 	m_atlasZoom = m_atlasZoomTo = 1.0;
 }
 
+RefCountedPtr<StarSystem> SystemView::GetCurrentSystem()
+{
+	return m_system;
+}
+
 template <typename RefType>
 void SystemView::PutOrbit(Projectable::bases base, RefType *ref, const Orbit *orbit, const vector3d &offset, const Color &color, const double planetRadius, const bool showLagrange)
 {
@@ -611,11 +616,13 @@ void SystemView::DrawAtlasView()
 	m_renderer->SetTransform(cameraTrans * gridTransform);
 	DrawGrid(64.0);
 
-	// TODO: refactor into a separate function
-	auto *b = m_system->GetRootBody().Get();
+	if (m_system && m_system->GetExplored()) {
+		// TODO: refactor into a separate function
+		auto *b = m_system->GetRootBody().Get();
 
-	m_renderer->SetTransform(cameraTrans);
-	RenderAtlasBody(b, vector3f(), cameraTrans, b->GetType() != SystemBody::TYPE_GRAVPOINT);
+		m_renderer->SetTransform(cameraTrans);
+		RenderAtlasBody(b, vector3f(), cameraTrans, b->GetType() != SystemBody::TYPE_GRAVPOINT);
+	}
 }
 
 void SystemView::Update()

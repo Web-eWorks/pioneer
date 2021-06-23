@@ -501,4 +501,14 @@ void pi_lua_generic_push(lua_State *l, T *value)
 		lua_pushnil(l);
 }
 
+template<class T>
+void pi_lua_generic_push(lua_State *l, RefCountedPtr<T> value)
+{
+	assert(l == Lua::manager->GetLuaState());
+	if (value.Valid())
+		LuaObject<typename std::remove_cv<T>::type>::PushToLua(value.Get());
+	else
+		lua_pushnil(l);
+}
+
 #endif
