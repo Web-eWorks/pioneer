@@ -15,6 +15,7 @@ local height_fraction = 2
 local pivot = Vector2(1, 0)
 
 local systemOverview = require 'pigui.modules.system-overview-window'.New()
+systemOverview.shouldDisplayPlayerDistance = true
 
 function systemOverview:onBodySelected(sbody, body)
 	Game.player:SetNavTarget(body)
