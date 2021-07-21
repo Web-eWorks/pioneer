@@ -296,7 +296,7 @@ void SectorView::Draw3D()
 	ImFont *font = Pi::pigui->GetFont("orbiteer", 14);
 	if (!font) font = ImGui::GetFont();
 
-	m_drawList->Clear();
+	m_drawList->_ResetForNewFrame();
 	m_drawList->PushTextureID(font->ContainerAtlas->TexID);
 	m_drawList->PushClipRectFullScreen();
 
