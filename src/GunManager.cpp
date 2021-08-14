@@ -70,6 +70,24 @@ void GunManager::UnmountGun(uint32_t num)
 	m_mountedGuns[num] = GunState();
 }
 
+uint32_t GunManager::GetFirstFreeMount() const
+{
+	for (uint32_t i = 0; i < m_mountedGuns.size(); i++)
+		if (!m_mountedGuns[i].gunData.Valid())
+			return i;
+
+	return m_mountedGuns.size();
+}
+
+uint32_t GunManager::GetNumFreeMounts() const
+{
+	uint32_t numFreeMounts = 0;
+	for (uint32_t i = 0; i < m_mountedGuns.size(); i++)
+		numFreeMounts += !(m_mountedGuns[i].gunData.Valid());
+
+	return numFreeMounts;
+}
+
 void GunManager::SetGunFiring(uint32_t num, bool firing)
 {
 	if (!IsGunMounted(num))

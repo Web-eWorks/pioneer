@@ -64,6 +64,9 @@ public:
 	bool IsGunMounted(uint32_t num) const;
 	uint32_t GetNumMounts() const { return m_gunMounts.size(); }
 
+	uint32_t GetFirstFreeMount() const;
+	uint32_t GetNumFreeMounts() const;
+
 	bool IsFiring() const { return m_isAnyFiring; }
 	bool IsFiring(uint32_t num) const { return IsGunMounted(num) ? m_mountedGuns[num].firing : false; }
 

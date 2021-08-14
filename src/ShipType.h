@@ -104,6 +104,9 @@ struct ShipType {
 		else
 			return &(*t).second;
 	}
+
+private:
+	void LoadFromJson(Json &data);
 };
 
 #endif /* _SHIPTYPE_H */

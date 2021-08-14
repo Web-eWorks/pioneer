@@ -59,7 +59,13 @@ ShipType::ShipType(const Id &_id, const std::string &path)
 	}
 
 	isGlobalColorDefined = false;
+	id = _id;
 
+	LoadFromJson(data);
+}
+
+void ShipType::LoadFromJson(Json &data)
+{
 	// determine what kind (tag) of ship this is.
 	const std::string tagStr = data.value("tag", "");
 	if (tagStr.empty() || strcasecmp(tagStr.c_str(), "ship") == 0) {
@@ -70,7 +76,6 @@ ShipType::ShipType(const Id &_id, const std::string &path)
 		tag = TAG_MISSILE;
 	}
 
-	id = _id;
 	name = data.value("name", "");
 	shipClass = data.value("ship_class", "");
 	manufacturer = data.value("manufacturer", "");

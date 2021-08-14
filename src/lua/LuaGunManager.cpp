@@ -1,4 +1,5 @@
-
+// Copyright © 2008-2021 Pioneer Developers. See AUTHORS.txt for details
+// Licensed under the terms of the GPL v3. See licenses/GPL-3.txt
 
 #include "GunManager.h"
 #include "LuaColor.h"
@@ -69,6 +70,21 @@ void LuaObject<GunData>::RegisterClass()
 	CreateClass(&s_metaType);
 }
 
+static int l_gunmanager_enumerate_mounts(lua_State *l, GunManager *s)
+{
+	lua_newtable(l);
+	for (uint32_t i = 0; i < s->GetNumMounts(); i++) {
+		const GunManager::GunState *state = s->GetGunState(i);
+		lua_pushnumber(l, i + 1);
+		if (state)
+			LuaPush(l, state->gunData.Get());
+		else
+			lua_pushboolean(l, false);
+		lua_settable(l, -3);
+	}
+	return 1;
+}
+
 template <>
 const char *LuaObject<GunManager>::s_type = "GunManager";
 
@@ -81,9 +97,20 @@ void LuaObject<GunManager>::RegisterClass()
 	s_metaType.StartRecording()
 		.AddFunction("IsGunMounted", &GunManager::IsGunMounted)
 		.AddFunction("GetNumMounts", &GunManager::GetNumMounts)
+		.AddFunction("GetFirstFreeMount", &GunManager::GetFirstFreeMount)
+		.AddFunction("GetNumFreeMounts", &GunManager::GetNumFreeMounts)
+		.AddFunction("EnumerateMounts", &l_gunmanager_enumerate_mounts)
 		.AddFunction("MountGun", &GunManager::MountGun)
 		.AddFunction("UnmountGun", &GunManager::UnmountGun)
-		.AddFunction("GetGunState", &GunManager::GetGunState)
+		.AddFunction("GetGunState", [](lua_State *l, GunManager *s) {
+			auto *state = s->GetGunState(LuaPull<uint32_t>(l, 2));
+			if (state)
+				LuaPush(l, state);
+			else
+				lua_pushnil(l);
+
+			return 1;
+		})
 		.AddFunction("IsFiring", [](lua_State *l, GunManager *s) {
 			if (lua_gettop(l) > 1)
 				LuaPush(l, s->IsFiring(lua_tonumber(l, 2)));
