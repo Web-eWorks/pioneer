@@ -159,6 +159,9 @@ namespace SceneGraph {
 		if (m_debugFlags & DEBUG_WIREFRAME)
 			m_renderer->SetWireFrameMode(false);
 
+		if (m_debugFlags & DEBUG_CHANGED_)
+			GenerateDebugMesh();
+
 		if (m_debugMesh) {
 			if (!m_debugLineMat) {
 				Graphics::MaterialDescriptor desc;
@@ -657,7 +660,14 @@ namespace SceneGraph {
 
 	void Model::SetDebugFlags(Uint32 flags)
 	{
-		m_debugFlags = flags;
+		if (m_debugFlags != flags)
+			m_debugFlags = flags | Model::DEBUG_CHANGED_;
+	}
+
+	void Model::GenerateDebugMesh()
+	{
+		// clear the model-changed flag
+		m_debugFlags &= (~Model::DEBUG_CHANGED_);
 
 		// reserve a decent amount of space if we're going to be drawing something
 		Graphics::VertexArray debugLines(Graphics::ATTRIB_POSITION | Graphics::ATTRIB_DIFFUSE, m_debugFlags ? 256 : 0);

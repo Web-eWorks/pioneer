@@ -178,12 +178,15 @@ namespace SceneGraph {
 			DEBUG_WIREFRAME = 0x4,
 			DEBUG_TAGS = 0x8,
 			DEBUG_DOCKING = 0x10,
-			DEBUG_GEOMBBOX = 0x20
+			DEBUG_GEOMBBOX = 0x20,
+			DEBUG_CHANGED_ = 0xF000 // <enum skip>
 		};
 		void SetDebugFlags(Uint32 flags);
 
 	private:
 		Model(const Model &);
+
+		void GenerateDebugMesh();
 
 		static const unsigned int MAX_DECAL_MATERIALS = 4;
 		ColorMap m_colorMap;
