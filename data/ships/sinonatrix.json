@@ -19,6 +19,14 @@
 		"cargo": 30
 	},
 	"roles": ["mercenary", "merchant", "pirate", "courier"],
+	"hardpoints": [
+		{
+			"type": "gun",
+			"tagname": "tag_gunmount_0",
+			"traverse": [5, 5],
+			"size": 2
+		}
+	],
 
 	"effective_exhaust_velocity": 16000000,
 	"thruster_fuel_use": -1.0,

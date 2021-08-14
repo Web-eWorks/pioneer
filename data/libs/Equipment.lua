@@ -308,6 +308,19 @@ hyperspace.hyperdrive_mil9 = HyperdriveType.New({
 	icon_name="equip_hyperdrive_mil"
 })
 
+laser.pulsecannon_1mw = LaserType2.New({
+	l10n_key="PULSECANNON_1MW", price=600, capabilities={mass=1},
+	slots = {"gun_mount"}, gun_data = {
+		projectile = {
+			lifespan = 5, speed = 1600, damage = 1000,
+			length = 30, width = 5, beam = 0, mining = 0, color = Color(255, 51, 51)
+		},
+		firingRPM = 300, heatPerShot = 2500, coolingPerSecond = 7200, overheatThreshold = 280000,
+		model = nil, numBarrels = 1
+	}
+})
+
+
 laser.pulsecannon_1mw = LaserType.New({
 	l10n_key="PULSECANNON_1MW", price=600, capabilities={mass=1},
 	slots = {"laser_front", "laser_rear"}, laser_stats = {
