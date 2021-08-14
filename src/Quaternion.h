@@ -30,14 +30,23 @@ public:
 		y = axis.y * sinHalfAng;
 		z = axis.z * sinHalfAng;
 	}
-	// from axis, assume angle == PI
-	// optimized fast path using sin(PI/2) = 1
-	Quaternion(vector3<T> axis)
+	// Create quaternion from normalized direction vectors.
+	// This creates a quaternion representing the rotation from the second
+	// unit direction vector to the first unit direction vector.
+	Quaternion(vector3<T> to, vector3<T> from = vector3<T>(0.0, 1.0, 0.0))
 	{
-		w = 0;
-		x = axis.x;
-		y = axis.y;
-		z = axis.z;
+		// Use half-angle trig identities to skip invoking trig functions
+		T cosAng = to.Dot(from);
+		// when to and from are equal (colinear), floating point error can cause
+		// this to become sqrt(-epsilon) without the std::max
+		T sinHalfAng = sqrt(std::max(1.0 - cosAng, 0.0) / 2.0);
+		// use the cross product to find the axis of rotation between the two vectors
+		vector3<T> rot = from.Cross(to).NormalizedSafe();
+
+		w = sqrt((1.0 + cosAng) / 2.0);
+		x = rot.x * sinHalfAng;
+		y = rot.y * sinHalfAng;
+		z = rot.z * sinHalfAng;
 	}
 	Quaternion(const Quaternion<other_float_t> &o) :
 		w(o.w),
@@ -106,6 +115,11 @@ public:
 		vector3<T> xyz = vector3<T>(a.x, a.y, a.z);
 		return vec + 2.0 * (vec.Cross(xyz) + a.w * vec).Cross(xyz);
 	}
+
+	// vector * quaternion = inverse multiplication scam
+	friend vector3<T> operator*(const vector3<T> &lhs, const Quaternion &rhs) { return ~rhs * lhs; }
+
+
 	friend Quaternion operator+(const Quaternion &a, const Quaternion &b)
 	{
 		Quaternion r;

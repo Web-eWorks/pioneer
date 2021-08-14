@@ -197,20 +197,21 @@ function LaserType2.New(specs)
 	specs.gunData = GunData()
 	for k, v in pairs(specs.gun_data) do specs.gunData[k] = v end
 	print(specs.gunData)
-	return LaserType2.Super().New(specs)
+	return setmetatable(LaserType2.Super().New(specs), LaserType2.meta)
 end
 
 function LaserType2:Install(ship, num, slot)
 	if num > 1 then error("Cannot install more than one laser in one go right now.") end
+	local index = ship.equipSet:OccupiedSpace(slot) - num
 	if LaserType.Super().Install(self, ship, 1, slot) < 1 then return 0 end
-	ship:GetGunManager():MountGun(0, self.gunData)
-	return 1
+	return ship:GetGunManager():MountGun(index, self.gunData) and 1 or 0
 end
 
 function LaserType2:Uninstall(ship, num, slot)
 	if num > 1 then error("Cannot uninstall more than one laser in one go right now.") end
 	if LaserType.Super().Uninstall(self, ship, 1) < 1 then return 0 end
-	ship:GetGunManager():UnmountGun(0, self.gunData)
+	local index = ship.equipSet:OccupiedSpace(slot)
+	ship:GetGunManager():UnmountGun(index, self.gunData)
 	return 1
 end
 

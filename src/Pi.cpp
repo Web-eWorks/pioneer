@@ -931,6 +931,21 @@ void GameLoop::Update(float deltaTime)
 	Pi::serverAgent->ProcessResponses();
 #endif
 
+	// FIXME: moving HandleEvents to the top of the frame minorly breaks SystemInfoView.
+	// FIXME: HandleEvents at the moment must be after view->Draw3D and before
+	// Gui::Draw so that labels drawn to screen can have mouse events correctly
+	// detected. Gui::Draw wipes memory of label positions.
+	Pi::GetApp()->HandleEvents();
+
+	// Ask ImGui to hide OS cursor if we're capturing it for input:
+	// it will do this if GetMouseCursor == ImGuiMouseCursor_None.
+	if (Pi::input->IsCapturingMouse()) {
+		ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+	}
+
+	// Start a frame here, so we can draw ui for debugging inside C++ code
+	Pi::pigui->NewFrame();
+
 	// TODO: is it necessary to limit frame delta to 1/4th second?
 	// Presumably if we're rendering < 4 FPS, we don't care about physics error either
 	// if (Pi::frameTime > 0.25) Pi::frameTime = 0.25;
@@ -1018,18 +1033,6 @@ void GameLoop::Update(float deltaTime)
 #ifdef REMOTE_LUA_REPL
 	Pi::luaConsole->HandleTCPDebugConnections();
 #endif
-
-	// Ask ImGui to hide OS cursor if we're capturing it for input:
-	// it will do this if GetMouseCursor == ImGuiMouseCursor_None.
-	if (Pi::input->IsCapturingMouse()) {
-		ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-	}
-
-	// TODO: the escape menu depends on HandleEvents() being called before NewFrame()
-	// Move HandleEvents to either the end of the loop or the very start of the loop
-	// The goal is to be able to call imgui functions for debugging inside C++ code
-	perfTimer.SoftReset();
-	Pi::pigui->NewFrame();
 
 	if (Pi::game && !Pi::player->IsDead()) {
 		// TODO: this mechanism still isn't perfect, but it gets us out of newUI

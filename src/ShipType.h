@@ -10,7 +10,7 @@
 #include <vector>
 
 struct ShipType {
-	enum class HardpointTag {
+	enum class HardpointTag { // <enum scope='ShipType::HardpointTag' name=HardpointTag public>
 		Gun,
 		Ordnance,
 		Utility,
@@ -24,10 +24,6 @@ struct ShipType {
 		uint32_t size;
 	};
 
-	enum DualLaserOrientation { // <enum scope='ShipType' name='DualLaserOrientation' prefix='DUAL_LASERS_' public>
-		DUAL_LASERS_HORIZONTAL,
-		DUAL_LASERS_VERTICAL
-	};
 	enum Tag { // <enum scope='ShipType' name=ShipTypeTag prefix=TAG_ public>
 		TAG_NONE,
 		TAG_SHIP,
@@ -35,6 +31,7 @@ struct ShipType {
 		TAG_MISSILE,
 		TAG_MAX // <enum skip>
 	};
+
 	typedef std::string Id;
 
 	ShipType(){};
@@ -63,7 +60,7 @@ struct ShipType {
 	int capacity; // tonnes
 	int hullMass;
 	float effectiveExhaustVelocity; // velocity at which the propellant escapes the engines
-	int fuelTankMass; //full fuel tank mass, on top of hullMass
+	int fuelTankMass;				//full fuel tank mass, on top of hullMass
 
 	//values for atmospheric flight
 	double topCrossSection;

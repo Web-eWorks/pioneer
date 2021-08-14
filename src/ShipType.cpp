@@ -213,6 +213,38 @@ ShipType::ShipType(const Id &_id, const std::string &path)
 		}
 	}
 
+	Json &hardpointArray = data["hardpoints"];
+	for (auto &t : hardpointArray) {
+		if (!t.is_object()) {
+			Output("Warning: %s invalid JSON object in hardpoints array\n", modelName.c_str());
+			continue;
+		}
+
+		HardpointInfo hp{};
+		const std::string &type = t.value("type", "gun");
+		if (type == "gun")
+			hp.type = HardpointTag::Gun;
+		else if (type == "ordnance")
+			hp.type = HardpointTag::Ordnance;
+		else if (type == "utility")
+			hp.type = HardpointTag::Utility;
+		else {
+			Output("Warning: %s invalid hardpoint type %s\n", modelName.c_str(), type.c_str());
+			continue;
+		}
+
+		hp.size = t.value("size", 1);
+		hp.tagname = t.value("tagname", "");
+
+		Json &traverse = t["traverse"];
+		if (traverse.is_array() && traverse.size() == 2) {
+			hp.traverse.x = traverse[0].get<float>();
+			hp.traverse.y = traverse[1].get<float>();
+		}
+
+		hardpoints.emplace_back(std::move(hp));
+	}
+
 	effectiveExhaustVelocity = data.value("effective_exhaust_velocity", -1.0f);
 	const float thruster_fuel_use = data.value("thruster_fuel_use", -1.0f);
 

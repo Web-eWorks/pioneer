@@ -314,9 +314,9 @@ laser.pulsecannon_1mw = LaserType2.New({
 	slots = {"laser_front"}, gun_data = {
 		projectile = {
 			lifespan = 5, speed = 1600, damage = 1000,
-			length = 30, width = 5, beam = 0, mining = 0, color = Color(255, 51, 51)
+			length = 15, width = 3, beam = false, mining = false, color = Color(255, 51, 51)
 		},
-		firingRPM = 300, firingHeat = 2500, coolingPerSecond = 7200, overheatThreshold = 280000,
+		firingRPM = 800, firingHeat = 2500, coolingPerSecond = 7200, overheatThreshold = 280000,
 		model = nil, numBarrels = 1
 	}, purchasable = true, tech_level = 3
 })

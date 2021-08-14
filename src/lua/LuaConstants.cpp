@@ -325,23 +325,6 @@ void LuaConstants::Register(lua_State *l)
 	 */
 
 	/*
-	 * Constants: DualLaserOrientation
-	 *
-	 * The orientation of dual laser mountings.
-	 *
-	 * HORIZONTAL - Lasers are mounted left and right
-	 * VERTICAL   - Lasers are mounted top and bottom
-	 *
-	 * Availability:
-	 *
-	 *   alpha 27
-	 *
-	 * Status:
-	 *
-	 *   experimental
-	 */
-
-	/*
 	 * Constants: ShipTypeTag
 	 *
 	 * Ship tags mark whether a ship is suitable for a particular use. Used

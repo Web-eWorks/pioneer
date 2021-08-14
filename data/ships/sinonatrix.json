@@ -22,8 +22,14 @@
 	"hardpoints": [
 		{
 			"type": "gun",
-			"tagname": "tag_gunmount_0",
-			"traverse": [5, 5],
+			"tagname": "tag_gunmount_0_multi_0",
+			"traverse": [5, 3],
+			"size": 2
+		},
+		{
+			"type": "gun",
+			"tagname": "tag_gunmount_0_multi_1",
+			"traverse": [5, 3],
 			"size": 2
 		}
 	],

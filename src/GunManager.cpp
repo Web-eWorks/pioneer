@@ -6,6 +6,7 @@
 #include "Beam.h"
 #include "Game.h"
 #include "Pi.h"
+#include "imgui/imgui.h"
 #include "scenegraph/MatrixTransform.h"
 
 void GunManager::Init(DynamicBody *b, const ShipType *t, SceneGraph::Model *m)
@@ -15,14 +16,24 @@ void GunManager::Init(DynamicBody *b, const ShipType *t, SceneGraph::Model *m)
 	m_mountedGuns.reserve(t->hardpoints.size());
 
 	for (auto &hardpoint : t->hardpoints) {
-		SceneGraph::MatrixTransform *tag = m->FindTagByName(hardpoint.tagname);
-		if (tag == nullptr)
+		if (hardpoint.type != ShipType::HardpointTag::Gun)
 			continue;
+
+		SceneGraph::MatrixTransform *tag = m->FindTagByName(hardpoint.tagname);
+		if (tag == nullptr) {
+			Log::Warning("Missing hardpoint tag {} in model {}\n", hardpoint.tagname, m->GetName());
+			continue;
+		}
 
 		GunMount newMount;
 		newMount.pos = vector3d(tag->GetTransform().GetTranslate());
 		newMount.dir = vector3d(tag->GetTransform().GetOrient().VectorZ());
+		newMount.traverseTan = vector2f(
+			tan(DEG2RAD(hardpoint.traverse.x)),
+			tan(DEG2RAD(hardpoint.traverse.y)));
 		newMount.hardpoint = &hardpoint;
+		m_gunMounts.emplace_back(std::move(newMount));
+		m_mountedGuns.push_back({});
 	}
 }
 
@@ -84,6 +95,7 @@ void GunManager::StopFiringAllGuns()
 
 void GunManager::Fire(uint32_t num)
 {
+	GunMount *gunMount = &m_gunMounts[num];
 	GunState *gunState = &m_mountedGuns[num];
 	GunData *gunData = gunState->gunData.Get();
 
@@ -97,15 +109,14 @@ void GunManager::Fire(uint32_t num)
 		numBarrels = gunData->numBarrels;
 	}
 
-	const matrix3x3d leadRot = Quaterniond(gunState->currentLeadDir).ToMatrix3x3<double>();
+	const matrix3x3d leadRot = Quaterniond(vector3d(gunState->currentLeadDir), gunMount->dir).ToMatrix3x3<double>();
 	const matrix3x3d &orient = m_parent->GetOrient();
 
 	for (size_t idx = barrelStart; idx < barrelStart + numBarrels; idx++) {
 		gunState->temperature += gunData->firingHeat;
-
 		// TODO: get individual barrel locations from gun model and cache them
-		const vector3d dir = (orient * leadRot * m_gunMounts[num].dir).Normalized();
-		const vector3d pos = orient * vector3d(m_gunMounts[num].pos) + m_parent->GetPosition();
+		const vector3d dir = (orient * leadRot * gunMount->dir).Normalized();
+		const vector3d pos = orient * gunMount->pos + m_parent->GetPosition();
 
 		if (gunData->projectile.beam) {
 			Beam::Add(m_parent, gunData->projectile, pos, m_parent->GetVelocity(), dir);
@@ -121,9 +132,49 @@ void GunManager::TimeStepUpdate(float deltaTime)
 {
 	bool isAnyFiring = false;
 
+	static ImGuiOnceUponAFrame thisFrame;
+	bool shouldDrawDebug = m_parent && m_parent->IsType(ObjectType::PLAYER) && thisFrame;
+	if (shouldDrawDebug)
+		ImGui::Begin("GunMangerDebug");
+
+	if (shouldDrawDebug) {
+		ImGui::Text("Gun mounts: %ld, mounted: %ld, target: %p", m_gunMounts.size(), m_mountedGuns.size(), m_targetBody);
+		ImGui::Spacing();
+	}
+
 	for (GunState &gun : m_mountedGuns) {
+		if (shouldDrawDebug) {
+			ImGui::Text("== Gun Mount: %d, filled: %d", gun.mount, gun.gunData.Valid());
+			if (gun.gunData.Valid()) {
+				ImGui::Indent();
+				ImGui::Text("Temperature: %f", gun.temperature);
+				ImGui::Text("Firing: %d", gun.firing);
+				ImGui::Text("Damage: %f", gun.gunData->projectile.damage);
+				ImGui::Text("NextFireTime: %f", gun.nextFireTime);
+				ImGui::Text("CurrentType: %f", Pi::game->GetTime());
+				ImGui::Text("Firing RPM: %f", gun.gunData->firingRPM);
+				ImGui::Text("Firing Heat: %f", gun.gunData->firingHeat);
+				ImGui::Text("Beam: %d", gun.gunData->projectile.beam);
+				ImGui::Text("Mining: %d", gun.gunData->projectile.mining);
+				const auto &leadDir = gun.currentLeadDir;
+				ImGui::Text("CurrentLeadDir: %f, %f, %f", leadDir.x, leadDir.y, leadDir.z);
+				ImGui::Unindent();
+			}
+			ImGui::Spacing();
+		}
 		if (!gun.gunData.Valid())
 			continue; // un-mounted gun slot
+
+		if (m_shouldTrackTarget && m_targetBody && !gun.gunData->projectile.beam) {
+			const matrix3x3d &orient = m_parent->GetOrient();
+			const vector3d relPosition = m_targetBody->GetPositionRelTo(m_parent);
+			const vector3d relVelocity = m_targetBody->GetVelocityRelTo(m_parent->GetFrame()) - m_parent->GetVelocity();
+
+			// bring velocity and acceleration into ship-space
+			CalcGunLead(&gun, relPosition * orient, relVelocity * orient);
+		} else {
+			gun.currentLeadDir = vector3f(m_gunMounts[gun.mount].dir);
+		}
 
 		gun.temperature = std::max(0.0f, gun.temperature - gun.gunData->coolingPerSecond * m_coolingBoost * deltaTime);
 		double currentTime = Pi::game->GetTime();
@@ -131,12 +182,13 @@ void GunManager::TimeStepUpdate(float deltaTime)
 		// determine if we should fire this update
 		isAnyFiring |= gun.firing;
 		if (gun.firing && currentTime >= gun.nextFireTime && gun.temperature < gun.gunData->overheatThreshold) {
+
 			// time between shots, used to determine how many shots we need to 'catch up' on this timestep
 			double deltaShot = 60.0 / gun.gunData->firingRPM;
 			// only fire multiple shots per timestep if the accumulated error and the length of the timestep require it
-			// e.g. 10x timescale could potentially have 2-3 shots per timestep with a high RPM weapon
+			// given that timescale is set to 1 while in combat, this is likely not going to be required except for NPCs
 			double accumTime = currentTime - gun.nextFireTime + deltaTime;
-			uint32_t numShots = floor(accumTime / deltaShot);
+			uint32_t numShots = 1 + floor(accumTime / deltaShot);
 
 			for (uint32_t i = 0; i < numShots; ++i)
 				Fire(gun.mount);
@@ -144,38 +196,32 @@ void GunManager::TimeStepUpdate(float deltaTime)
 			// set the next fire time, making sure to preserve accumulated (fractional) shot time
 			gun.nextFireTime += deltaShot * numShots;
 
-			// should never happen, but if our time rate gets completely out of whack we reset it
-			if (gun.nextFireTime < currentTime)
-				gun.nextFireTime = currentTime;
 		} else {
 			gun.firedThisUpdate = false;
 		}
 
-		if (m_shouldTrackTarget && m_targetBody) {
-			vector3d relPosition = m_targetBody->GetPositionRelTo(m_parent);
-			vector3d relVelocity = m_targetBody->GetVelocityRelTo(m_parent->GetFrame()) - m_parent->GetVelocity();
-			vector3d relAcceleration = m_parent->GetLastForce() / m_parent->GetMass();
-
-			if (m_targetBody->IsType(ObjectType::DYNAMICBODY)) {
-				vector3d targetAccel = m_targetBody->GetOrientRelTo(m_parent->GetFrame()) * static_cast<DynamicBody *>(m_targetBody)->GetLastForce() / m_targetBody->GetMass();
-				relAcceleration = targetAccel - relAcceleration;
-			}
-
-			const matrix3x3d &orient = m_parent->GetOrient();
-			// bring velocity and acceleration into ship-space
-			CalcGunLead(&gun, relPosition * orient, relVelocity * orient, relAcceleration * orient);
-		} else {
-			gun.currentLeadDir = vector3f(m_gunMounts[gun.mount].dir);
-		}
+		// ensure next fire time is properly handled (e.g. during gun overheat)
+		if (gun.firing)
+			gun.nextFireTime = std::max(gun.nextFireTime, currentTime);
 	}
 
 	m_isAnyFiring = isAnyFiring;
+	if (shouldDrawDebug)
+		ImGui::End();
 }
 
 void GunManager::SetTrackingTarget(Body *target)
 {
+	if (m_targetBody)
+		m_targetDestroyedCallback.disconnect();
+
 	m_shouldTrackTarget = (target != nullptr);
 	m_targetBody = target;
+
+	if (target)
+		m_targetDestroyedCallback = target->onDelete.connect([=]() {
+			this->SetTrackingTarget(nullptr);
+		});
 }
 
 bool GunManager::IsGunMounted(uint32_t num) const
@@ -183,30 +229,29 @@ bool GunManager::IsGunMounted(uint32_t num) const
 	return num < m_mountedGuns.size() && m_mountedGuns[num].gunData.Valid();
 }
 
-static constexpr double MAX_LEAD_ANGLE = DEG2RAD(1.5);
-void GunManager::CalcGunLead(GunState *state, vector3d position, vector3d relativeVelocity, vector3d relativeAcceleration)
+void GunManager::CalcGunLead(GunState *state, vector3d position, vector3d relativeVelocity)
 {
 	const vector3f forwardVector = vector3f(m_gunMounts[state->mount].dir);
 
 	// calculate firing solution and relative velocity along our z axis
-	// don't calculate lead if there's no gun there
 	const double projspeed = state->gunData->projectile.speed;
-	// generate a basic approximation ignoring acceleration to estimate travel time
+	// generate a basic approximation to estimate travel time
 	vector3d leadpos = position + relativeVelocity * (position.Length() / projspeed);
-	// second-order approximation taking acceleration and velocity into account
+	// second-order approximation
 	float travelTime = leadpos.Length() / projspeed;
-	leadpos = position + (relativeVelocity + relativeAcceleration * travelTime) * travelTime;
-	// third-order approximation (re-deriving travel time)
-	travelTime = leadpos.Length() / projspeed;
-	leadpos = position + (relativeVelocity + relativeAcceleration * travelTime) * travelTime;
+	leadpos = position + (relativeVelocity)*travelTime;
+	state->currentLeadPos = leadpos;
 
 	// float has plenty of precision when working with normalized directions.
 	const vector3f targetDir = vector3f(leadpos.Normalized());
-	const vector3f gunLeadTarget = (targetDir.Dot(forwardVector) >= cos(MAX_LEAD_ANGLE)) ? targetDir : forwardVector;
-	// FIXME: for some unearthly reason, pointing directly at the lead target causes projectiles to overshoot by 2x
-	// So we just interpolate by exactly half and it works perfectly. This is a pretty benign hack, all considered.
-	Quaternionf interpTarget = Quaternionf::Slerp(Quaternionf(gunLeadTarget), Quaternionf(forwardVector), 0.5);
+	const Quaternionf forwardToZ(vector3f(0, 0, -1), forwardVector);
 
-	float angle;
-	interpTarget.GetAxisAngle(angle, state->currentLeadDir);
+	// We represent the maximum traverse of the weapon as an ellipse relative
+	// to the -Z axis of the gun.
+	// To determine whether the lead target is within this traverse, we modify
+	// the coordinate system such that the ellipse becomes the unit circle in
+	// 2D space, and test the length of the 2D components of the direction
+	// vector.
+	vector2f traverseRel = vector3(forwardToZ * targetDir).xy() / m_gunMounts[state->mount].traverseTan;
+	state->currentLeadDir = (targetDir.Dot(forwardVector) > 0 && traverseRel.LengthSqr() <= 1.0) ? targetDir : forwardVector;
 }

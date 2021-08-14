@@ -7,6 +7,7 @@
 #include "Game.h"
 #include "GameConfig.h"
 #include "GameSaveError.h"
+#include "GunManager.h"
 #include "HudTrail.h"
 #include "HyperspaceCloud.h"
 #include "Input.h"
@@ -334,9 +335,10 @@ void WorldView::UpdateProjectedObjects()
 			}
 		}
 
-		FixedGuns *gunManager = Pi::player->GetComponent<FixedGuns>();
-		if (laser >= 0 && gunManager->IsGunMounted(laser) && gunManager->IsFiringSolutionOk()) {
-			UpdateIndicator(m_targetLeadIndicator, cam_rot * gunManager->GetTargetLeadPos());
+		// FIXME: need some way to assign gun mounts to specific cameras/seats
+		// TODO: check if the lead solution is valid (port FixedGuns::IsFiringSolutionOk)
+		if (laser >= 0 && Pi::player->GetComponent<GunManager>()->IsGunMounted(laser)) {
+			UpdateIndicator(m_targetLeadIndicator, cam_rot * Pi::player->GetComponent<GunManager>()->GetGunState(laser)->currentLeadPos);
 			if ((m_targetLeadIndicator.side != INDICATOR_ONSCREEN) || (m_combatTargetIndicator.side != INDICATOR_ONSCREEN))
 				HideIndicator(m_targetLeadIndicator);
 		} else {
