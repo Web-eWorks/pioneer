@@ -579,15 +579,15 @@ template <class T>
 void pi_lua_generic_pull(lua_State *l, int index, RefCountedPtr<T> &out)
 {
 	assert(l == Lua::manager->GetLuaState());
-	out = LuaObject<typename std::remove_cv<T>::type>::CheckFromLua(index);
+	out.Reset(LuaObject<typename std::remove_cv<T>::type>::CheckFromLua(index));
 }
 
 template <class T>
 bool pi_lua_strict_pull(lua_State *l, int index, RefCountedPtr<T> &out)
 {
 	assert(l == Lua::manager->GetLuaState());
-	out = LuaObject<typename std::remove_cv<T>::type>::GetFromLua(index);
-	return out != 0;
+	out.Reset(LuaObject<typename std::remove_cv<T>::type>::GetFromLua(index));
+	return out.Valid();
 }
 
 template <class T>

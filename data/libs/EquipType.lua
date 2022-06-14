@@ -5,6 +5,7 @@ local utils = require 'utils'
 local Serializer = require 'Serializer'
 local Lang = require 'Lang'
 local ShipDef = require 'ShipDef'
+local GunData = require 'GunData'
 
 local Game = package.core['Game']
 local Space = package.core['Space']
@@ -190,6 +191,29 @@ function LaserType:Uninstall(ship, num, slot)
 	return 1
 end
 
+local LaserType2 = utils.inherits(EquipType, "LaserType2")
+function LaserType2.New(specs)
+	require 'utils'.print_r(specs.gun_data)
+	specs.gunData = GunData()
+	for k, v in pairs(specs.gun_data) do specs.gunData[k] = v end
+	print(specs.gunData)
+	return LaserType2.Super().New(specs)
+end
+
+function LaserType2:Install(ship, num, slot)
+	if num > 1 then error("Cannot install more than one laser in one go right now.") end
+	if LaserType.Super().Install(self, ship, 1, slot) < 1 then return 0 end
+	ship:GetGunManager():MountGun(0, self.gunData)
+	return 1
+end
+
+function LaserType2:Uninstall(ship, num, slot)
+	if num > 1 then error("Cannot uninstall more than one laser in one go right now.") end
+	if LaserType.Super().Uninstall(self, ship, 1) < 1 then return 0 end
+	ship:GetGunManager():UnmountGun(0, self.gunData)
+	return 1
+end
+
 -- Single drive type, no support for slave drives.
 local HyperdriveType = utils.inherits(EquipType, "HyperdriveType")
 
@@ -343,6 +367,7 @@ return {
 	misc			= misc,
 	EquipType		= EquipType,
 	LaserType		= LaserType,
+	LaserType2		= LaserType2,
 	HyperdriveType	= HyperdriveType,
 	SensorType		= SensorType,
 	BodyScannerType	= BodyScannerType

@@ -8,6 +8,7 @@
 #include "LuaManager.h"
 #include "LuaPushPull.h"
 #include "LuaTable.h"
+#include "src/lua.h"
 
 /*
  * LuaMetaType is a C++ -> Lua binding system intended to drastically

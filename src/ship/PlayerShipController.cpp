@@ -6,6 +6,7 @@
 #include "Game.h"
 #include "GameConfig.h"
 #include "GameSaveError.h"
+#include "GunManager.h"
 #include "Input.h"
 #include "Json.h"
 #include "Pi.h"
@@ -636,6 +637,7 @@ void PlayerShipController::PollControls(const float timeStep, int *mouseMotion, 
 	// only linear thrust ^ is allowed in the system map
 	if (Pi::GetView() == Pi::game->GetSystemView()) return;
 
+	m_ship->GetComponent<GunManager>()->StopFiringAllGuns();
 	m_ship->SetGunState(0, 0);
 	m_ship->SetGunState(1, 0);
 
@@ -687,7 +689,9 @@ void PlayerShipController::PollControls(const float timeStep, int *mouseMotion, 
 
 	if (InputBindings.primaryFire->IsActive() || (Pi::input->MouseButtonState(SDL_BUTTON_LEFT) && Pi::input->MouseButtonState(SDL_BUTTON_RIGHT))) {
 		//XXX worldview? madness, ask from ship instead
+		// FIXME: don't use GetActiveWeapon, instead figure out which weapon mounts are controlled from this view by testing their directions
 		m_ship->SetGunState(Pi::game->GetWorldView()->GetActiveWeapon(), 1);
+		m_ship->GetComponent<GunManager>()->SetGunFiring(0, true);
 	}
 
 	vector3d wantAngVel = vector3d(

@@ -6,6 +6,7 @@ local EquipTypes  = require 'EquipType'
 local Serializer  = require 'Serializer'
 
 local LaserType       = EquipTypes.LaserType
+local LaserType2      = EquipTypes.LaserType2
 local EquipType       = EquipTypes.EquipType
 local HyperdriveType  = EquipTypes.HyperdriveType
 local SensorType      = EquipTypes.SensorType
@@ -310,17 +311,17 @@ hyperspace.hyperdrive_mil9 = HyperdriveType.New({
 
 laser.pulsecannon_1mw = LaserType2.New({
 	l10n_key="PULSECANNON_1MW", price=600, capabilities={mass=1},
-	slots = {"gun_mount"}, gun_data = {
+	slots = {"laser_front"}, gun_data = {
 		projectile = {
 			lifespan = 5, speed = 1600, damage = 1000,
 			length = 30, width = 5, beam = 0, mining = 0, color = Color(255, 51, 51)
 		},
-		firingRPM = 300, heatPerShot = 2500, coolingPerSecond = 7200, overheatThreshold = 280000,
+		firingRPM = 300, firingHeat = 2500, coolingPerSecond = 7200, overheatThreshold = 280000,
 		model = nil, numBarrels = 1
-	}
+	}, purchasable = true, tech_level = 3
 })
 
-
+--[[
 laser.pulsecannon_1mw = LaserType.New({
 	l10n_key="PULSECANNON_1MW", price=600, capabilities={mass=1},
 	slots = {"laser_front", "laser_rear"}, laser_stats = {
@@ -329,6 +330,7 @@ laser.pulsecannon_1mw = LaserType.New({
 	}, purchasable=true, tech_level=3,
 	icon_name="equip_pulsecannon"
 })
+--]]
 laser.pulsecannon_dual_1mw = LaserType.New({
 	l10n_key="PULSECANNON_DUAL_1MW", price=1100, capabilities={mass=4},
 	slots = {"laser_front", "laser_rear"}, laser_stats = {

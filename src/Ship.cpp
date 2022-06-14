@@ -9,6 +9,7 @@
 #include "Game.h"
 #include "GameLog.h"
 #include "GameSaveError.h"
+#include "GunManager.h"
 #include "HeatGradientPar.h"
 #include "HyperspaceCloud.h"
 #include "JsonUtils.h"
@@ -35,6 +36,7 @@
 #include "scenegraph/Animation.h"
 #include "scenegraph/Tag.h"
 #include "ship/PlayerShipController.h"
+#include "sound/Sound.h"
 
 static const float TONS_HULL_PER_SHIELD = 10.f;
 const float Ship::DEFAULT_SHIELD_COOLDOWN_TIME = 1.0f;
@@ -57,6 +59,7 @@ Ship::Ship(const ShipType::Id &shipId) :
 	*/
 	m_propulsion = AddComponent<Propulsion>();
 	m_fixedGuns = AddComponent<FixedGuns>();
+	AddComponent<GunManager>();
 	Properties().Set("flightState", EnumStrings::GetString("ShipFlightState", m_flightState));
 	Properties().Set("alertStatus", EnumStrings::GetString("ShipAlertStatus", m_alertState));
 
@@ -122,6 +125,7 @@ Ship::Ship(const Json &jsonObj, Space *space) :
 {
 	m_propulsion = AddComponent<Propulsion>();
 	m_fixedGuns = AddComponent<FixedGuns>();
+	AddComponent<GunManager>();
 
 	try {
 		Json shipObj = jsonObj["ship"];
@@ -159,6 +163,8 @@ Ship::Ship(const Json &jsonObj, Space *space) :
 		m_hyperspace.sounds.jump_sound = shipObj.value("hyperspace_jump_sound", "");
 
 		m_fixedGuns->LoadFromJson(shipObj, space);
+		Json gunManager = shipObj["GunManager"];
+		GetComponent<GunManager>()->LoadFromJson(gunManager, space);
 
 		m_ecmRecharge = shipObj["ecm_recharge"];
 		SetShipId(shipObj["ship_type_id"]); // XXX handle missing thirdparty ship
@@ -239,6 +245,7 @@ void Ship::Init()
 	m_forceWheelUpdate = true;
 
 	m_fixedGuns->InitGuns(GetModel());
+	GetComponent<GunManager>()->Init(this, GetShipType(), GetModel());
 
 	// If we've got the tag_landing set then use it for an offset
 	// otherwise use zero so that it will dock but look clearly incorrect
@@ -688,8 +695,9 @@ void Ship::UpdateLuaStats()
 void Ship::UpdateGunsStats()
 {
 	PropertyMap &prop = Properties();
-	float cooler = prop.Get("laser_cooler_cap");
-	m_fixedGuns->SetCoolingBoost(cooler ? cooler : 1.0f);
+	float cooler = std::min(prop.Get("laser_cooler_cap").get_number(), 1.0);
+	m_fixedGuns->SetCoolingBoost(cooler);
+	GetComponent<GunManager>()->SetCoolingBoost(cooler);
 
 	for (int num = 0; num < 2; num++) {
 		std::string prefix(num ? "laser_rear_" : "laser_front_");
@@ -1107,7 +1115,7 @@ void Ship::UpdateAlertState()
 			if ((i)->IsType(ObjectType::SHIP)) {
 				// TODO: Here there were a const on Ship*, now it cannot remain because of ship->firing and so, this open a breach...
 				// A solution is to put a member on ship: true if is firing, false if is not
-				Ship *ship = static_cast<Ship *>(i);
+				const Ship *ship = static_cast<Ship *>(i);
 
 				if (ship->GetShipType()->tag == ShipType::TAG_STATIC_SHIP) continue;
 				if (ship->GetFlightState() == LANDED || ship->GetFlightState() == DOCKED) continue;
@@ -1115,8 +1123,7 @@ void Ship::UpdateAlertState()
 				if (GetPositionRelTo(ship).LengthSqr() < ALERT_DISTANCE * ALERT_DISTANCE) {
 					ship_is_near = true;
 
-					Uint32 gunstate = ship->m_fixedGuns->IsFiring();
-					if (gunstate) {
+					if (ship->GetComponent<GunManager>()->IsFiring()) {
 						ship_is_firing = true;
 						break;
 					}
@@ -1288,6 +1295,40 @@ void Ship::StaticUpdate(const float timeStep)
 	// lasers
 	FixedGuns *fg = m_fixedGuns;
 	fg->UpdateGuns(timeStep);
+
+	auto *gunManager = GetComponent<GunManager>();
+	gunManager->TimeStepUpdate(timeStep);
+
+	// TODO: this should probably be handled somewhere else
+	bool didAnyFire = false;
+	for (uint32_t i = 0; i < gunManager->GetNumMounts(); i++) {
+		const GunManager::GunState *gun = gunManager->GetGunState(i);
+		if (gun == nullptr) continue;
+
+		didAnyFire |= gun->firedThisUpdate;
+		if (gun->firedThisUpdate && !gun->gunData->projectile.beam) {
+			Sound::BodyMakeNoise(this, "Pulse_Laser", 1.0f);
+		}
+
+		if (gun->gunData->projectile.beam) {
+			if (gun->firing) {
+				float vl, vr;
+				Sound::CalculateStereo(this, 1.0f, &vl, &vr);
+				if (!m_beamLaser[i % 2].IsPlaying()) {
+					m_beamLaser[i % 2].Play("Beam_laser", vl, vr, Sound::OP_REPEAT);
+				} else {
+					// update volume
+					m_beamLaser[i % 2].SetVolume(vl, vr);
+				}
+			} else if (m_beamLaser[i % 2].IsPlaying()) {
+				m_beamLaser[i % 2].Stop();
+			}
+		}
+	}
+
+	if (didAnyFire)
+		LuaEvent::Queue("onShipFiring", this);
+
 	for (int i = 0; i < 2; i++) {
 		if (fg->Fire(i, this)) {
 			if (fg->IsBeam(i)) {

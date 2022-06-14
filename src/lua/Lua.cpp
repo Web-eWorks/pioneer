@@ -28,6 +28,7 @@
 #include "LuaVector2.h"
 
 #include "Body.h"
+#include "GunManager.h"
 #include "SectorView.h"
 #include "Ship.h"
 #include "SpaceStation.h"
@@ -102,6 +103,9 @@ namespace Lua {
 
 		LuaObject<LuaSerializer>::RegisterClass();
 		LuaObject<LuaTimer>::RegisterClass();
+
+		LuaObject<GunData>::RegisterClass();
+		LuaObject<GunManager>::RegisterClass();
 
 		LuaConstants::Register(Lua::manager->GetLuaState());
 		LuaLang::Register();

@@ -5,6 +5,7 @@
 #include "EnumStrings.h"
 #include "Frame.h"
 #include "Game.h"
+#include "GunManager.h"
 #include "HyperspaceCloud.h"
 #include "Lua.h"
 #include "LuaObject.h"
@@ -141,6 +142,27 @@ static int l_ship_get_ship_class(lua_State *l)
 {
 	Ship *s = LuaObject<Ship>::CheckFromLua(1);
 	LuaPush(l, s->GetShipType()->shipClass.c_str());
+	return 1;
+}
+
+/* Method: GetGunManager
+ *
+ * Returns this ship's GunManager instance
+ *
+ * > local gunManager = ship:GetGunManager()
+ *
+ * Availability:
+ *
+ *   2021-02
+ *
+ * Status:
+ *
+ *   stable
+ */
+static int l_ship_get_gun_manager(lua_State *l)
+{
+	Ship *s = LuaObject<Ship>::CheckFromLua(1);
+	LuaPush(l, s->GetComponent<GunManager>());
 	return 1;
 }
 
@@ -1668,6 +1690,8 @@ void LuaObject<Ship>::RegisterClass()
 		{ "SetPattern", l_ship_set_pattern },
 		{ "SetLabel", l_ship_set_label },
 		{ "SetShipName", l_ship_set_ship_name },
+
+		{ "GetGunManager", l_ship_get_gun_manager },
 
 		{ "GetHyperspaceDestination", l_ship_get_hyperspace_destination },
 
