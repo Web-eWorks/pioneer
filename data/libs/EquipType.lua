@@ -201,24 +201,28 @@ function LaserType2.New(specs)
 end
 
 function LaserType2:Install(ship, num, slot)
+	local gunManager = ship:GetComponent('GunManager')
+
 	if num > 1 then error("Cannot install more than one laser in one go right now.") end
 	if LaserType.Super().Install(self, ship, 1, slot) < 1 then return 0 end
-	local index = ship:GetGunManager():GetFirstFreeMount()
-	return ship:GetGunManager():MountGun(index, self.gunData) and 1 or 0
+	local index = gunManager:GetFirstFreeMount()
+	return gunManager:MountGun(index, self.gunData) and 1 or 0
 end
 
 function LaserType2:Uninstall(ship, num, slot)
+	local gunManager = ship:GetComponent('GunManager')
+
 	if num > 1 then error("Cannot uninstall more than one laser in one go right now.") end
 	if LaserType.Super().Uninstall(self, ship, 1) < 1 then return 0 end
 
-	local mounts = ship:GetGunManager():EnumerateMounts()
+	local mounts = gunManager:EnumerateMounts()
 	local index = nil
 	for i = #mounts, 0, -1 do
 		if mounts[i] then index = i; break end
 	end
 	if not index then return 0 end
 
-	ship:GetGunManager():UnmountGun(index - 1, self.gunData)
+	gunManager:UnmountGun(index - 1, self.gunData)
 	return 1
 end
 

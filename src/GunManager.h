@@ -6,6 +6,7 @@
 #include "Projectile.h"
 #include "RefCounted.h"
 #include "ShipType.h"
+#include "lua/LuaWrappable.h"
 #include "scenegraph/Model.h"
 #include <string>
 
@@ -24,7 +25,7 @@ struct GunData : public RefCounted {
 	bool staggerBarrels = false; // should we fire one barrel after another, or both at the same time?
 };
 
-class GunManager : public BodyComponent, public DeleteEmitter {
+class GunManager : public LuaWrappable {
 public:
 	struct GunState {
 		uint32_t mount = 0;			  // index of the gun mount in the model

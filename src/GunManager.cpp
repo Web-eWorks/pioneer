@@ -7,7 +7,14 @@
 #include "Game.h"
 #include "Pi.h"
 #include "imgui/imgui.h"
+#include "lua/LuaBodyComponent.h"
 #include "scenegraph/MatrixTransform.h"
+
+REGISTER_COMPONENT_TYPE(GunManager) {
+	BodyComponentDB::RegisterComponent<GunManager>("GunManager");
+	BodyComponentDB::RegisterSerializer<GunManager>();
+	BodyComponentDB::RegisterLuaInterface<GunManager>();
+}
 
 void GunManager::Init(DynamicBody *b, const ShipType *t, SceneGraph::Model *m)
 {
