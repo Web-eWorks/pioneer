@@ -4,6 +4,8 @@
 #include "LuaShipDef.h"
 #include "EnumStrings.h"
 #include "Lua.h"
+#include "LuaTable.h"
+#include "LuaVector2.h"
 #include "LuaUtils.h"
 #include "ShipType.h"
 
@@ -300,6 +302,32 @@ void LuaShipDef::Register()
 		}
 		pi_lua_readonly_table_proxy(l, -1);
 		lua_setfield(l, -3, "roles");
+		lua_pop(l, 1);
+
+		lua_newtable(l);
+		uint32_t numHardpoints = 1;
+
+		for (auto &hardpoint : st.hardpoints) {
+			LuaTable hpt(l);
+
+			hpt.Set("type", EnumStrings::GetString("HardpointTag", int(hardpoint.type)));
+			hpt.Set("tagname", hardpoint.tagname);
+			hpt.Set("traverse", vector2d(hardpoint.traverse));
+			hpt.Set("size", hardpoint.size);
+
+			// create the table proxy
+			lua_pushinteger(l, numHardpoints++);
+			pi_lua_readonly_table_proxy(l, -2);
+
+			// [ {}, hpt, numHardpoints, proxy ]
+			lua_settable(l, -4);
+
+			// remove the table from the stack
+			lua_pop(l, 1);
+		}
+
+		pi_lua_readonly_table_proxy(l, -1);
+		lua_setfield(l, -3, "hardpoints");
 		lua_pop(l, 1);
 
 		pi_lua_readonly_table_proxy(l, -1);
