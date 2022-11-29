@@ -85,6 +85,19 @@ static int l_gunmanager_enumerate_mounts(lua_State *l, GunManager *s)
 	return 1;
 }
 
+static int l_gunmanager_get_hardpoint_for_mount(lua_State *l, GunManager *s)
+{
+	int mountIdx = luaL_checkinteger(l, 2);
+	auto *hardpoint = s->GetHardpointForMount(mountIdx);
+
+	if (hardpoint)
+		LuaPush(l, hardpoint->index + 1);
+	else
+		lua_pushnil(l);
+
+	return 1;
+}
+
 template <>
 const char *LuaObject<GunManager>::s_type = "GunManager";
 
@@ -100,6 +113,7 @@ void LuaObject<GunManager>::RegisterClass()
 		.AddFunction("GetFirstFreeMount", &GunManager::GetFirstFreeMount)
 		.AddFunction("GetNumFreeMounts", &GunManager::GetNumFreeMounts)
 		.AddFunction("EnumerateMounts", &l_gunmanager_enumerate_mounts)
+		.AddFunction("GetHardpointForMount", &l_gunmanager_get_hardpoint_for_mount)
 		.AddFunction("MountGun", &GunManager::MountGun)
 		.AddFunction("UnmountGun", &GunManager::UnmountGun)
 		.AddFunction("GetGunState", [](lua_State *l, GunManager *s) {

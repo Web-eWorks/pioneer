@@ -22,6 +22,7 @@ struct ShipType {
 		std::string tagname;
 		vector2f traverse;
 		uint32_t size;
+		uint32_t index;
 	};
 
 	enum Tag { // <enum scope='ShipType' name=ShipTypeTag prefix=TAG_ public>

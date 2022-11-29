@@ -95,6 +95,14 @@ uint32_t GunManager::GetNumFreeMounts() const
 	return numFreeMounts;
 }
 
+const ShipType::HardpointInfo *GunManager::GetHardpointForMount(uint32_t mount) const
+{
+	if (mount < m_gunMounts.size())
+		return m_gunMounts[mount].hardpoint;
+
+	return nullptr;
+}
+
 void GunManager::SetGunFiring(uint32_t num, bool firing)
 {
 	if (!IsGunMounted(num))

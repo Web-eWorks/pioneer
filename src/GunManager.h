@@ -71,6 +71,7 @@ public:
 	bool IsFiring() const { return m_isAnyFiring; }
 	bool IsFiring(uint32_t num) const { return IsGunMounted(num) ? m_mountedGuns[num].firing : false; }
 
+	const ShipType::HardpointInfo *GetHardpointForMount(uint32_t mount) const;
 	const GunState *GetGunState(uint32_t num) const { return IsGunMounted(num) ? &m_mountedGuns[num] : nullptr; }
 	const Body *GetTargetBody() const { return m_targetBody; }
 

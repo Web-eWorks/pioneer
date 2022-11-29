@@ -247,6 +247,8 @@ void ShipType::LoadFromJson(Json &data)
 			hp.traverse.y = traverse[1].get<float>();
 		}
 
+		hp.index = hardpoints.size();
+
 		hardpoints.emplace_back(std::move(hp));
 	}
 
