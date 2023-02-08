@@ -10,6 +10,11 @@ in vec4 texCoord1;
 
 out vec4 frag_color;
 
+float findSphereEyeRayEntryDistance(in vec3 sphereCenter, in vec3 eyeTo, in float radius)
+{
+	return raySphereIntersect(sphereCenter, normalize(eyeTo), radius).x;
+}
+
 void main(void)
 {
 	// Bits of ring in shadow!
