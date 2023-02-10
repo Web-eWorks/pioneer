@@ -1025,11 +1025,6 @@ void GameLoop::Update(float deltaTime)
 	// Gui::Draw so that labels drawn to screen can have mouse events correctly
 	// detected. Gui::Draw wipes memory of label positions.
 
-	// Read events into internal structures and into imgui structures,
-	// dispatch will be performed after the imgui frame, so that imgui can add
-	// something based on clicks on widgets
-	Pi::GetApp()->PollEvents();
-
 #ifdef REMOTE_LUA_REPL
 	Pi::luaConsole->HandleTCPDebugConnections();
 #endif
