@@ -4,6 +4,7 @@
 #include "LuaShipDef.h"
 #include "EnumStrings.h"
 #include "Lua.h"
+#include "LuaJson.h"
 #include "LuaTable.h"
 #include "LuaVector2.h"
 #include "LuaUtils.h"
@@ -329,6 +330,10 @@ void LuaShipDef::Register()
 		pi_lua_readonly_table_proxy(l, -1);
 		lua_setfield(l, -3, "hardpoints");
 		lua_pop(l, 1);
+
+		Json data = JsonUtils::LoadJsonDataFile(st.definitionPath);
+		LuaJson::PushToLua(l, data);
+		lua_setfield(l, -2, "raw");
 
 		pi_lua_readonly_table_proxy(l, -1);
 		lua_setfield(l, -3, iter.first.c_str());

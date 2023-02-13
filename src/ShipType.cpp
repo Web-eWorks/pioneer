@@ -60,6 +60,7 @@ ShipType::ShipType(const Id &_id, const std::string &path)
 
 	isGlobalColorDefined = false;
 	id = _id;
+	definitionPath = path;
 
 	LoadFromJson(data);
 }
