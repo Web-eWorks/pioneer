@@ -408,6 +408,9 @@ local SensorType = utils.inherits(EquipType, "SensorType")
 -- NOTE: all code related to managing a body scanner is implemented in the ScanManager component
 local BodyScannerType = utils.inherits(SensorType, "BodyScannerType")
 
+Serializer:RegisterClass("LaserType2", LaserType2)
+LaserType2:SetupPrototype()
+
 Serializer:RegisterClass("LaserType", LaserType)
 Serializer:RegisterClass("EquipType", EquipType)
 Serializer:RegisterClass("HyperdriveType", HyperdriveType)
