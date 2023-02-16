@@ -209,6 +209,8 @@ function EquipType:Uninstall(ship, num, slot)
 	return __ApplyCapabilities(ship, self.capabilities, num, -1)
 end
 
+--==============================================================================
+
 -- Base type for weapons
 local LaserType = utils.inherits(EquipType, "LaserType")
 
