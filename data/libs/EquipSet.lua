@@ -3,6 +3,7 @@
 
 local utils = require 'utils'
 local Serializer = require 'Serializer'
+
 --
 -- Class: EquipSet
 --
@@ -36,7 +37,10 @@ EquipSet.default = {
 	thruster = 1
 }
 
-function EquipSet.New (slots)
+function EquipSet.New (shipType)
+	-- XXX: fallback to loading ShipDef from package.core because ShipDef imports EquipSet during setup
+	local slots = package.core["ShipDef"][shipType].equipSlotCapacity
+
 	---@class EquipSet
 	local obj = {}
 	obj.slots = {}

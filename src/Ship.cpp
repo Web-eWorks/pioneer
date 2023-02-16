@@ -325,12 +325,11 @@ void Ship::InitEquipSet()
 	pi_lua_import(l, "EquipSet");
 	LuaTable es_class(l, -1);
 
-	LuaTable slots = LuaTable(l).LoadMap(GetShipType()->slots.begin(), GetShipType()->slots.end());
-	m_equipSet = es_class.Call<LuaRef>("New", slots);
+	m_equipSet = es_class.Call<LuaRef>("New", GetShipType()->id);
 
 	UpdateEquipStats();
 
-	lua_pop(l, 2);
+	lua_pop(l, 1);
 	LUA_DEBUG_END(l, 0);
 }
 

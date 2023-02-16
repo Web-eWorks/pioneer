@@ -193,13 +193,16 @@ void ShipType::LoadFromJson(Json &data)
 	capacity = data.value("capacity", 0);
 	fuelTankMass = data.value("fuel_tank_mass", 5);
 
-	for (Json::iterator slot = data["slots"].begin(); slot != data["slots"].end(); ++slot) {
+	for (const auto &slot : data["slots"].items()) {
+		if (!slot.value().is_number())
+			continue;
+
 		const std::string slotname = slot.key();
 		slots[slotname] = data["slots"].value(slotname, 0);
 	}
 
-	for (Json::iterator role = data["roles"].begin(); role != data["roles"].end(); ++role) {
-		roles[*role] = true;
+	for (const auto &role : data["roles"]) {
+		roles[role] = true;
 	}
 
 	for (int it = 0; it < 4; it++)
