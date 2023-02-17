@@ -216,7 +216,7 @@ void ShipType::LoadFromJson(Json &data)
 	atmosphericPressureLimit = data.value("atmospheric_pressure_limit", 10.0); // 10 atmosphere is about 90 metres underwater (on Earth)
 
 	{
-		const auto it = slots.find("engine");
+		const auto it = slots.find("hyperdrive");
 		if (it != slots.end()) {
 			it->second = Clamp(it->second, 0, 1);
 		}
@@ -353,7 +353,7 @@ int _define_ship(lua_State *L, ShipType::Tag tag, std::vector<ShipType::Id> *lis
 	lua_pop(L, 1);
 
 	{
-		const auto it = s.slots.find("engine");
+		const auto it = s.slots.find("hyperdrive");
 		if (it != s.slots.end()) {
 			it->second = Clamp(it->second, 0, 1);
 		}

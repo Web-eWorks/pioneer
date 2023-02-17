@@ -24,7 +24,7 @@ local function displayTargetScannerFor(target, offset)
 	local shield = target:GetShieldsPercent()
 	local class = target:GetShipType()
 	local label = target.label
-	local engine = target:GetEquip('engine', 1)
+	local engine = target:GetEquip('hyperdrive', 1)
 	local stats = target:GetStats()
 	local mass = stats.staticMass
 	local cargo = stats.usedCargo

@@ -11,14 +11,14 @@
 	"atmospheric_pressure_limit": 4,
 	"capacity": 5,
 	"slots": {
-		"engine": 1,
+		"hyperdrive": 1,
 		"cabin": 0,
 		"scoop": 0,
 		"laser_front": 1,
 		"cargo": 5
 	},
 	"roles": ["mercenary", "pirate", "courier"],
-	
+
 	"effective_exhaust_velocity": 8900000,
 	"thruster_fuel_use": -1.0,
 	"fuel_tank_mass": 5,

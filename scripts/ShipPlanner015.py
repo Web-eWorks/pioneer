@@ -36,26 +36,26 @@ bl_info = {
 	"category": "Scene"}
 
 gee = 9.81
-def sum_mass(hull, fuel, cap, cargo_cap):	
-	result = [hull+fuel+cap, hull+fuel, hull+fuel+cargo_cap] 
+def sum_mass(hull, fuel, cap, cargo_cap):
+	result = [hull+fuel+cap, hull+fuel, hull+fuel+cargo_cap]
 	return result
 
 def acc(mass, thrust):
 	acc_full = (thrust/mass[0]/gee) #mass*1000 volt
 	acc_empty = (thrust/mass[1]/gee)
-	
+
 	if acc_full <= 0.0001:
 		result_full = "<0.0001"
 	else:
 		result_full = acc_full
-	
+
 	if acc_empty <= 0.0001:
 		result_empty = "<0.0001"
 	else:
 		result_empty = acc_empty
-		
+
 	result = [result_full, result_empty]
-		
+
 	return result
 
 def deltav(ev, mass, fuel_cap):
@@ -79,7 +79,7 @@ class VesselExport(bpy.types.Operator): # , bpy_extras.io_utils.ExportHelper .Ex
 		return context.active_object is not None
 
 	def execute(self, context):
-		print("Krumpli") 
+		print("Krumpli")
 		scene = bpy.data.scenes["Scene"]
 #		file = open(filepath, 'w', encoding="ansi", newline = "\n")
 		file = open(os.path.splitext(bpy.data.filepath)[0] + ".json", 'w', newline = "\n")
@@ -106,7 +106,7 @@ class VesselExport(bpy.types.Operator): # , bpy_extras.io_utils.ExportHelper .Ex
 			fw('\t\t"cargo" : ' + str(scene.CargoCap) + ',\n')
 		else:
 			fw('\t\t"cargo" : ' + str(scene.Capacity) + ',\n')
-		fw('\t\t"engine" : ' + str(scene.Max_Engine) + ',\n')
+		fw('\t\t"hyperdrive" : ' + str(scene.Max_Engine) + ',\n')
 		#no default checking for these, sisnce I like them being around in each ship file
 		fw('\t\t"scoop" : ' + str(scene.Scoop) + ',\n')
 		fw('\t\t"laser_front" : ' + str(scene.laser_front) + ',\n')
@@ -142,7 +142,7 @@ class VesselExport(bpy.types.Operator): # , bpy_extras.io_utils.ExportHelper .Ex
 		fw('\t\t"atmo_shield" : ' + str(scene.Atmoshield) + '\n') #last entry doesn't have a comma,!
 		fw('\t},\n')
 		#performance stuff
-		fw('\t"effective_exhaust_velocity" : ' + str(int(scene.EV*1000)) + ',\n')	
+		fw('\t"effective_exhaust_velocity" : ' + str(int(scene.EV*1000)) + ',\n')
 		fw('\t"thruster_fuel_use" : -1.0,\n') # to avoid problems if line missing
 		fw('\t"fuel_tank_mass" : ' + str(scene.FuelMass) + ',\n')
 		if scene.Max_Engine < scene.Hyperdrive: #checking if default drive class is larger than max, if so using the max class instead
@@ -158,29 +158,29 @@ class VesselExport(bpy.types.Operator): # , bpy_extras.io_utils.ExportHelper .Ex
 		fw('\t"right_thrust" : ' + str(int(scene.RIGHT*1000)) + ',\n')
 		fw('\t"angular_thrust" : ' + str(int(scene.ANG*1000)) + '\n')
 		fw('}')
-		
-		
-	
+
+
+
 		file.close()
-		
+
 		return {'FINISHED'}
-	
+
 
 class ShipPlanner(bpy.types.Panel):
 		"""Ship stats planner utility for Pioneer"""
 		bl_idname = "ShipPlanner"
-		bl_label = "Ship Planner"			   
+		bl_label = "Ship Planner"
 		bl_space_type = 'PROPERTIES'
 		bl_region_type = 'WINDOW'
 		bl_context = 'scene'
 		#bl_options = { 'UNDO'}
-			
+
 		def draw(self, context):
 			layout = self.layout
-			scn = bpy.context.scene 
+			scn = bpy.context.scene
 			scene = bpy.data.scenes["Scene"]
-			
-			#row_init = layout.row()			
+
+			#row_init = layout.row()
 			#row_init.operator("InitProps.bl_idname", text = "InitProps.bl_label")
 
 			ship_box = layout.box()
@@ -197,29 +197,29 @@ class ShipPlanner(bpy.types.Panel):
 			row_class.prop( scn, 'ShipClass')
 			row_price = ship_box.row()
 			row_price.prop(scn, 'Price')
-			
+
 			row_crew = ship_box.row()
 			row_crew.prop(scn, 'Min_crew')
 			row_crew.prop(scn, 'Max_crew')
-			
+
 			mass_box = layout.box()
 			mass_box.label("Masses (t)", icon = "OBJECT_DATA")
 			row_hull = mass_box.row()
 			#row_hull.label("Hull mass")
 			row_hull.prop(scn, 'HullMass')
 			row_hull.prop(scn, 'FuelMass', text = "Fuel mass")
-			
+
 			row_cap = mass_box.row()
 			#row_cap.label("Capacity")
 			row_cap.prop(scn, 'Capacity')
 			row_cap.prop(scn, 'CargoCap', text = "Cargo cap")
-	
-			mass = sum_mass(scene.HullMass, scene.FuelMass, scene.Capacity, scn.CargoCap) # calculate ship mass  
+
+			mass = sum_mass(scene.HullMass, scene.FuelMass, scene.Capacity, scn.CargoCap) # calculate ship mass
 			row_masses = mass_box.row()
 			row_masses.label(str("Full mass: " + str(mass[0]) + "t"))
 			row_masses.label(str("Empty mass: " + str(mass[1]) + "t"))
 			row_masses.label(str("Cargo mass: " + str(mass[2]) + "t"))
-											
+
 			########
 			thr_box = layout.box()
 			thr_box.label("Thrust (kN)", icon = "LAMP_SPOT")
@@ -228,7 +228,7 @@ class ShipPlanner(bpy.types.Panel):
 			#row1.label("Longitudal")
 			row1.prop(scn, 'FWD', text = "fwd")
 			row1.prop(scn, 'BWD', text = "bwd")
-			
+
 			row2 = thr_box.row(align = True)
 			#row2.label("Acceleration:")
 			acc_fwd = acc(mass, scene.FWD)
@@ -240,30 +240,30 @@ class ShipPlanner(bpy.types.Panel):
 			#row3.label("Vertical")
 			row3.prop(scn, 'UP', text = "up")
 			row3.prop(scn, 'DWN',text = "down")
-			
+
 			row4 = thr_box.row(align = True)
 			#row4.label("Acceleration:")
 			acc_up = acc(mass, scene.UP)
 			acc_down = acc(mass, scene.DWN)
 			row4.label("F: " + str(acc_up[0])[0:6] + " G / E: " + str(acc_up[1])[0:6] +" G")
 			row4.label("F: " + str(acc_down[0])[0:6] + " G / E: " + str(acc_down[1])[0:6] +" G")
-			
+
 			row5 = thr_box.row(align = True)
 			#row5.label("Horizontal")
 			row5.prop(scn, 'LEFT', text = "left")
 			row5.prop(scn, 'RIGHT', text = "right")
-			
+
 			row6 = thr_box.row(align = True)
 			#row6.label("Acceleration:")
 			acc_left = acc(mass, scene.LEFT)
 			acc_right = acc(mass, scene.RIGHT)
 			row6.label("F: " + str(acc_left[0])[0:6] + " G / E: " + str(acc_left[1])[0:6] +" G")
 			row6.label("F: " + str(acc_right[0])[0:6] + " G / E: " + str(acc_right[1])[0:6] +" G")
-			
+
 			row7 = thr_box.row(align = True)
 			#row5.label("Angular")
 			row7.prop(scn, 'ANG', text = "angular")
-			########									
+			########
 			thr_box = layout.box()
 			thr_box.label("Efficiency", icon = "IPO")
 
@@ -272,91 +272,91 @@ class ShipPlanner(bpy.types.Panel):
 			row_EV.prop(scn, 'EV', text = "ev")
 			row_deltaV = thr_box.row(align = True)
 			row_deltaV.label("DeltaV:")
-			
-			row_empty = thr_box.row(align = True)		   
-			deltav_empty = deltav(scene.EV, scene.HullMass, scene.FuelMass)		 
+
+			row_empty = thr_box.row(align = True)
+			deltav_empty = deltav(scene.EV, scene.HullMass, scene.FuelMass)
 			row_empty.label("Empty: " + str(deltav_empty)[0:10] + " km/s")
 
 			row_full = thr_box.row(align = True)
 			deltav_full = deltav(scene.EV, (scene.HullMass+scene.Capacity), scene.FuelMass)
-			row_full.label("Full: " + str(deltav_full)[0:10] + " km/s")			
+			row_full.label("Full: " + str(deltav_full)[0:10] + " km/s")
 
 			row_maximum = thr_box.row(align = True)
 			deltav_max = deltav(scene.EV, scene.HullMass, (scene.FuelMass+scene.CargoCap))
 			row_maximum.label("Max: " + str(deltav_max)[0:10] + " km/s")
-   
-			 ###########			
-			
+
+			 ###########
+
 			equip_box = layout.box()
 			equip_box.label("Equipment mounts", icon = "PLUGIN")
-			
+
 			row_hyperdrive = equip_box.row(align = True)
 			row_hyperdrive.prop(scn, 'Hyperdrive', text = "Hyperdrive")
 			row_hyperdrive.prop(scn, 'Max_Engine', text = "Max")
-			
+
 			row_wep = equip_box.row(align = True)
 			row_wep.prop(scn, 'laser_front', text = "Front laser")
 			row_wep.prop(scn, 'laser_rear', text = "Rear laser")
-			
+
 			row_cooling = equip_box.row(align = True)
 			row_cooling.prop(scn, 'Missiles', text = "Missiles")
-			
+
 			row_cooling = equip_box.row(align = True)
 			row_cooling.prop(scn, 'Lasercooler', text = "Laser cooling Booster")
-			
+
 			row_scoop = equip_box.row(align = True)
 			row_scoop.prop(scn, 'Scoop', text = "Scoop")
-	
+
 			row_scanner = equip_box.row(align = True)
 			row_scanner.prop(scn, 'Scanner', text = "Scanner")
 			row_scanner.prop(scn, 'Radarmapper', text = "Radar Mapper")
-			
+
 			row_hypercloud = equip_box.row(align = True)
 			row_hypercloud.prop(scn, 'Hypercloud', text = "Hypercloud analyzer")
 			row_hypercloud.prop(scn, 'Sensor', text = "(Sensor)")
-			
+
 			row_ecm = equip_box.row(align = True)
 			row_ecm.prop(scn, 'Max_ecm', text = "ECM")
-			
+
 			row_atmoshield = equip_box.row(align = True)
 			row_atmoshield.prop(scn, 'Atmoshield', text = 'Atmo shielding')
-			
+
 			row_shield = equip_box.row(align = True)
 			row_shield.prop(scn, 'Shield', text = 'Max Shield')
 			row_shield.prop(scn, 'Energybooster', text = 'Energy Booster')
-			
+
 			row_cabin = equip_box.row(align = True)
 			row_cabin.prop(scn, 'Cabin', text = 'Max Passenger Cabin')
-			
+
 			row_cargolife = equip_box.row(align = True)
 			row_cargolife.prop(scn, 'Cargolifesupport', text = 'Cargo bay Life support')
-			
+
 			row_autopilot = equip_box.row(align = True)
 			row_autopilot.prop(scn, 'Autopilot', text = 'Autopilot')
-			
+
 			row_autorepair = equip_box.row(align = True)
 			row_autorepair.prop(scn, 'Autorepair', text = 'Hull Autorepair system')
-			
+
 			row_tradecomp = equip_box.row(align = True)
 			row_tradecomp.prop(scn, 'Tradecomp', text = 'Trade analyzer')
-			
+
 			############################
-			
+
 			vessel_export = layout.box()
 			vessel_export.label("Export", icon = "EXPORT")
-			
+
 			exportrow = vessel_export.row(align = True)
 			exportrow.operator("object.simple_operator", text = "Export")
-			
-			
-			
-			
+
+
+
+
 
 #class InitProps(bpy.types.Operator):
 #   """Tooltip"""
 #   bl_idname = "scene.init_my_prop"
 #   bl_label = "Init properties"
-#   
+#
 #   @classmethod
 #	def poll(cls, context):
 #		return context.scene
@@ -364,30 +364,30 @@ class ShipPlanner(bpy.types.Panel):
 #	   if context.scene.Capacity != 1:
 #		   context.scene.Capacity = 1
 #	   return {'FINISHED'}
-		
-	
+
+
 #Registering the operator
-			   
-def register():	
+
+def register():
 	bpy.utils.register_class(ShipPlanner)
 	bpy.utils.register_class(VesselExport)
 
 	bpy.types.Scene.Valami = bpy.props.FloatProperty(   #ezzel hozom letre, tobbi feljebb
 		name = "Valami",
 		default = 0.0,
-		description = "Ez bizony mar valami") 
-	
+		description = "Ez bizony mar valami")
+
 	#######Ship box######
 	bpy.types.Scene.ShipName = bpy.props.StringProperty(
 		name = "Ship Name",
 		default = "name",
 		description = "Name of the ship, displayed in the game.")
-	
+
 	bpy.types.Scene.Cockpit = bpy.props.StringProperty(
 		name = "Cockpit",
 		default = '',
 		description = "Custom cockpit .model Leave blank for default cockpit.")
-	
+
 	bpy.types.Scene.ManufacturerName = bpy.props.StringProperty(
 		name = "Manufacturer",
 		default = "opli",
@@ -403,19 +403,19 @@ def register():
 		name = "Model file",
 		default = "model",
 		description = "Name of the model file to be used. They are in the data/models/ folder")
-	
+
 	bpy.types.Scene.Price = bpy.props.IntProperty(
 		name = "Price",
 		default = 1,
 		min = 1,
 		description = "Base price of the ship.")
-	
+
 	bpy.types.Scene.Min_crew = bpy.props.IntProperty(
 		name = "Min crew",
 		default = 1,
 		min = 1,
 		description = "Minimum crew capacity of the ship.")
-		
+
 	bpy.types.Scene.Max_crew = bpy.props.IntProperty(
 		name = "Max crew",
 		default = 1,
@@ -430,86 +430,86 @@ def register():
 		min = 1,
 		max = 1000000000,
 		description = "Mass of the hull in tonnes.")
-		
+
 	bpy.types.Scene.FuelMass = bpy.props.IntProperty(
 		name = "Fuel tank mass",
 		default = 1,
 		min = 1,
 		max = 1000000000,
 		description = "Capacity of the fuel tank in tonnes.")
-		
+
 	bpy.types.Scene.Capacity = bpy.props.IntProperty(
 		name = "Capacity",
 		default = 1,
 		min = 1,
 		max = 1000000000,
 		description = "Equipment and cargo capacity of the ship in tonnes.")
-		
+
 	bpy.types.Scene.CargoCap = bpy.props.IntProperty(
 		name = "Cargo capacity",
 		default = 1,
 		min = 1,
 		max = 1000000000,
 		description = "Cargo capacity in tonnes.")
-	
+
 	#######Thrust box#######
 	bpy.types.Scene.FWD = bpy.props.FloatProperty(
 		name = "FWD thrust",
 		default = 1.0,
 		min = 1.0,
 		max = 1000000000.0,
-		description = "Forward thrust in kN's") 
-		
+		description = "Forward thrust in kN's")
+
 	bpy.types.Scene.BWD = bpy.props.FloatProperty(
 		name = "BWD thrust",
 		default = 1.0,
 		min = 1.0,
 		max = 1000000000.0,
-		description = "Backward thrust in kN's") 
-		
+		description = "Backward thrust in kN's")
+
 	bpy.types.Scene.UP = bpy.props.FloatProperty(
 		name = "UP thrust",
 		default = 1.0,
 		min = 1.0,
 		max = 1000000000.0,
-		description = "Upward thrust in kN's") 
-		
+		description = "Upward thrust in kN's")
+
 	bpy.types.Scene.DWN = bpy.props.FloatProperty(
 		name = "DOWD thrust",
 		default = 1.0,
 		min = 1.0,
 		max = 1000000000.0,
-		description = "Downward thrust in kN's") 
-		
+		description = "Downward thrust in kN's")
+
 	bpy.types.Scene.LEFT = bpy.props.FloatProperty(
 		name = "LEFT thrust",
 		default = 1.0,
 		min = 1.0,
 		max = 1000000000.0,
-		description = "Leftward thrust in kN's") 
-		
+		description = "Leftward thrust in kN's")
+
 	bpy.types.Scene.RIGHT = bpy.props.FloatProperty(
 		name = "RIGHT thrust",
 		default = 1.0,
 		min = 1.0,
 		max = 1000000000.0,
-		description = "Rightward thrust in kN's") 
-		
+		description = "Rightward thrust in kN's")
+
 	bpy.types.Scene.ANG = bpy.props.FloatProperty(
 		name = "ANG thrust",
 		default = 1.0,
 		min = 1.0,
 		max = 1000000000.0,
-		description = "Angular thrust in kN's") 
-		
+		description = "Angular thrust in kN's")
+
 	##########Efficiency box#########
 	bpy.types.Scene.EV = bpy.props.FloatProperty(
 		name = "ev",
 		default = 1.0,
 		min = 1.0,
 		max = 1000000000.0,
-		description = "Exhaust velocity in km/s") 
-		
+		description = "Exhaust velocity in km/s")
+
 	##########Equipments#############
 	bpy.types.Scene.Hyperdrive = bpy.props.IntProperty(
 		default = 1,
@@ -522,25 +522,25 @@ def register():
 		min = 0,
 		max = 13,
 		description = "Maximum hyperdrive class. 0 for no hyperspace capability")
-		
+
 	bpy.types.Scene.laser_front = bpy.props.IntProperty(
 		default = 1,
 		min = 0,
 		max = 1,
 		description = "Front cannon mount")
-		
+
 	bpy.types.Scene.laser_rear = bpy.props.IntProperty(
 		default = 0,
 		min = 0,
 		max = 1,
 		description = "Rear cannon mount")
-		
+
 	bpy.types.Scene.Missiles = bpy.props.IntProperty(
 		default = 0,
 		min = 0,
 		max = 50,
 		description = "Number of missiles the ship can carry")
-	
+
 	bpy.types.Scene.Max_missile = bpy.props.IntProperty(
 		default = 0,
 		min = 0,
@@ -553,92 +553,92 @@ def register():
 		max = 3,
 		description = "Scoop compatibility 0: no scoop, 1: fuel scoop, 2: cargo scoop, 3: combo scoop")
 
-	
+
 	bpy.types.Scene.Max_ecm = bpy.props.IntProperty(
 		default = 1,
 		min = 0,
 		max = 1,
-		description = "ECM compatibility.") 
-	
+		description = "ECM compatibility.")
+
 	bpy.types.Scene.Scanner = bpy.props.IntProperty(
 		default = 1,
 		min = 0,
 		max = 1,
-		description = "Scanner compatibility.") 
-		
+		description = "Scanner compatibility.")
+
 	bpy.types.Scene.Radarmapper = bpy.props.IntProperty(
 		default = 1,
 		min = 0,
 		max = 1,
 		description = "Radar mapper compatibility.")
-		
+
 	bpy.types.Scene.Hypercloud = bpy.props.IntProperty(
 		default = 1,
 		min = 0,
 		max = 1,
-		description = "Hypercloud analyzer compatibility.")	 
-		
+		description = "Hypercloud analyzer compatibility.")
+
 	bpy.types.Scene.Sensor = bpy.props.IntProperty(
 		default = 8,
 		min = 0,
 		max = 50,
-		description = "Sensor mount - currently not in use")	 
-	
+		description = "Sensor mount - currently not in use")
+
 	bpy.types.Scene.Autorepair = bpy.props.IntProperty(
 		default = 1,
 		min = 0,
 		max = 1,
-		description = "Hull Autorepair sys compatibility.")	
-		
+		description = "Hull Autorepair sys compatibility.")
+
 	bpy.types.Scene.Energybooster = bpy.props.IntProperty(
 		default = 1,
 		min = 0,
 		max = 1,
-		description = "Energy booster compatibility.")  
-		
+		description = "Energy booster compatibility.")
+
 	bpy.types.Scene.Atmoshield = bpy.props.IntProperty(
 		default = 1,
 		min = 0,
 		max = 1,
-		description = "Atmospheric shielding compatibility. Ships without it can't land or be bought on surface bases") 
-		
+		description = "Atmospheric shielding compatibility. Ships without it can't land or be bought on surface bases")
+
 	bpy.types.Scene.Cabin = bpy.props.IntProperty(
 		default = 50,
 		min = 0,
 		max = 50,
-		description = "Passenger cabin compatibility and max amount.")  
-		
+		description = "Passenger cabin compatibility and max amount.")
+
 	bpy.types.Scene.Shield = bpy.props.IntProperty(
 		default = 9999,
 		min = 0,
 		max = 9999,
-		description = "Shield compatibility and max amount.")   
-		
+		description = "Shield compatibility and max amount.")
+
 	bpy.types.Scene.Lasercooler = bpy.props.IntProperty(
 		default = 1,
 		min = 0,
 		max = 1,
 		description = "Laser cooling booster compatibility.")
-		
+
 	bpy.types.Scene.Cargolifesupport = bpy.props.IntProperty(
 		default = 1,
 		min = 0,
 		max = 1,
-		description = "Cargo bay life support compatibility.")  
-		
+		description = "Cargo bay life support compatibility.")
+
 	bpy.types.Scene.Autopilot = bpy.props.IntProperty(
 		default = 1,
 		min = 0,
 		max = 1,
-		description = "Autopilot compatibility.")  
+		description = "Autopilot compatibility.")
 
 	bpy.types.Scene.Tradecomp = bpy.props.IntProperty(
 		default = 1,
 		min = 0,
 		max = 1,
-		description = "Trade analyzer.") 		
-	
-			
+		description = "Trade analyzer.")
+
+
 def unregister():
 	bpy.utils.unregister_class(ShipPlanner)
 	del bpy.types.Scene.ShipName
@@ -676,7 +676,7 @@ def unregister():
 	del bpy.types.Scene.Lasercooler
 	del bpy.types.Scene.Cargolifesupport
 	del bpy.types.Scene.Autopilot
-	
-			
+
+
 if __name__ == "__main__":
 	register()

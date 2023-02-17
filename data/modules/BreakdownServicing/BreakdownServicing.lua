@@ -86,7 +86,7 @@ end
 local onChat = function (form, ref, option)
 	local ad = ads[ref]
 
-	local hyperdrive = Game.player:GetEquip('engine',1)
+	local hyperdrive = Game.player:GetEquip('hyperdrive',1)
 
 	-- Tariff!  ad.baseprice is from 2 to 10
 	local price = ad.baseprice
@@ -176,7 +176,7 @@ local onShipTypeChanged = function (ship)
 end
 
 local onShipEquipmentChanged = function (ship, equipment)
-	if ship:IsPlayer() and equipment and equipment:IsValidSlot("engine", ship) then
+	if ship:IsPlayer() and equipment and equipment:IsValidSlot("hyperdrive", ship) then
 		service_history.company = nil
 		service_history.lastdate = Game.time
 		service_history.service_period = oneyear
@@ -285,7 +285,7 @@ local onEnterSystem = function (ship)
 			service_history.jumpcount = service_history.jumpcount - fixup
 		else
 			-- Destroy the engine
-			local engine = ship:GetEquip('engine',1)
+			local engine = ship:GetEquip('hyperdrive',1)
 
 			if engine.fuel.name == 'military_fuel' then
 				pigui.playSfx("Hyperdrive_Breakdown_Military", 1.0, 1.0)

@@ -11,7 +11,7 @@
 	"atmospheric_pressure_limit": 3.5,
 	"capacity": 35,
 	"slots": {
-		"engine": 1,
+		"hyperdrive": 1,
 		"cabin": 3,
 		"scoop": 0,
 		"laser_front": 1,
@@ -19,8 +19,8 @@
 		"missile": 8,
 		"cargo": 25
 	},
-	"roles": ["mercenary"],	
-	
+	"roles": ["mercenary"],
+
 	"effective_exhaust_velocity": 16000000,
 	"thruster_fuel_use": -1.0,
 	"fuel_tank_mass": 30,

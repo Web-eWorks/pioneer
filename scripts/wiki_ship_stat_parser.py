@@ -80,7 +80,7 @@ def inv_flatten(b, val={}):
 # from data/libs/Equipset:
 default_values = {
     "slots" + DELIM + "cargo" : 0,
-    "slots" + DELIM + "engine" : 1,
+    "slots" + DELIM + "hyperdrive" : 1,
     "slots" + DELIM + "laser_front" : 1,
     "slots" + DELIM + "laser_rear" : 0,
     "slots" + DELIM + "missile" : 0,
@@ -260,7 +260,7 @@ def print_ship_as_wiki_infobox(ship_name):
         shipTable = json.load(ship_file)
 
     try:
-        if shipTable['slots']['engine'] > 0:
+        if shipTable['slots']['hyperdrive'] > 0:
             max_engine = "yes"
         else:
             max_engine = "no"

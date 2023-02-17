@@ -11,7 +11,7 @@
 	"atmospheric_pressure_limit": 4.9,
 	"capacity": 3200,
 	"slots": {
-		"engine": 1,
+		"hyperdrive": 1,
 		"cabin": 10,
 		"laser_front": 1,
 		"laser_rear": 1,
@@ -19,7 +19,7 @@
 		"cargo": 2900
 	},
 	"roles": ["merchant"],
-	
+
 	"effective_exhaust_velocity": 16900000,
 	"thruster_fuel_use": -1.0,
 	"fuel_tank_mass": 2200,

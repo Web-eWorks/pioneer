@@ -278,7 +278,7 @@ InfoView:registerView({
 		end)
 
 		shipDef = ShipDef[Game.player.shipId]
-		hyperdrive = table.unpack(Game.player:GetEquip("engine")) or nil
+		hyperdrive = table.unpack(Game.player:GetEquip("hyperdrive")) or nil
 		hyperdrive_fuel = hyperdrive and hyperdrive.fuel or Commodities.hydrogen
 	end,
 

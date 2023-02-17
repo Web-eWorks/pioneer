@@ -751,7 +751,7 @@ local createTargetShip = function (mission)
 
 	-- add hydrogen for hyperjumping even for refueling missoins - to reserve the space
 	-- for refueling missions it is removed later
-	local drive = ship:GetEquip('engine', 1)
+	local drive = ship:GetEquip('hyperdrive', 1)
 	local hypfuel = drive.capabilities.hyperclass ^ 2  -- fuel for max range
 	ship:GetComponent('CargoManager'):AddCommodity(drive.fuel or Commodities.hydrogen, hypfuel)
 
@@ -1299,7 +1299,7 @@ local makeAdvert = function (station, manualFlavour, closestplanets)
 	local needed_fuel
 	if flavour.id == 2 or flavour.id == 5 then
 		needed_fuel = math.max(math.floor(shipdef.fuelTankMass * 0.1), 1)
-	elseif flavour.id == 4 then -- different planet 
+	elseif flavour.id == 4 then -- different planet
 		needed_fuel = math.max(math.floor(shipdef.fuelTankMass * 0.5), 1)
 	end
 	deliver_comm[Commodities.hydrogen] = needed_fuel
@@ -2095,7 +2095,7 @@ local onShipDocked = function (ship, station)
 				ship:SetFuelPercent(100)
 
 				-- add hydrogen for hyperjumping
-				local drive = ship:GetEquip('engine', 1)
+				local drive = ship:GetEquip('hyperdrive', 1)
 				if drive then
 					---@type CargoManager
 					local cargoMgr = ship:GetComponent('CargoManager')

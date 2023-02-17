@@ -844,7 +844,7 @@ function Windows.objectInfo:Show()
 			-- This is what should be inserted:
 			table.insert(data, { name = luc.SHIP_TYPE, value = body:GetShipType() })
 			if player:GetEquipCountOccupied('target_scanner') > 0 or player:GetEquipCountOccupied('advanced_target_scanner') > 0 then
-				local hd = body:GetEquip("engine", 1)
+				local hd = body:GetEquip("hyperdrive", 1)
 				table.insert(data, { name = luc.HYPERDRIVE, value = hd and hd:GetName() or lc.NO_HYPERDRIVE })
 				table.insert(data, { name = luc.MASS, value = Format.MassTonnes(body:GetStats().staticMass) })
 				table.insert(data, { name = luc.CARGO, value = Format.MassTonnes(body:GetStats().usedCargo) })

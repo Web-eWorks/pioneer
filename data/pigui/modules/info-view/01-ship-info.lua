@@ -23,7 +23,7 @@ local function shipStats()
 	-- Taken directly from ShipInfo.lua.
 	local shipDef       =  ShipDef[player.shipId]
 	local shipLabel     =  player:GetLabel()
-	local hyperdrive    =  table.unpack(player:GetEquip("engine"))
+	local hyperdrive    =  table.unpack(player:GetEquip("hyperdrive"))
 	local frontWeapon   =  table.unpack(player:GetEquip("laser_front"))
 	local rearWeapon    =  table.unpack(player:GetEquip("laser_rear"))
 	local cabinEmpty    =  player:CountEquip(Equipment.misc.cabin, "cabin")

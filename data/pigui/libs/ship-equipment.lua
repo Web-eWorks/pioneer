@@ -43,7 +43,7 @@ local emptySlot = {
 -- Equipment item grouping by underlying slot type
 -- TODO: significant refactor to slot system to reduce highly-specialized slots
 local sections = {
-	{ name = le.PROPULSION, slot = "engine", showCapacity = true },
+	{ name = le.PROPULSION, slot = "hyperdrive", showCapacity = true },
 	{ name = le.WEAPONS, slot = "laser_front", showCapacity = true },
 	{ name = le.MISSILES, slot = "missile", showCapacity = true },
 	{ name = le.SCOOPS, slot = "scoop", showCapacity = true },

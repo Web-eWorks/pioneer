@@ -11,7 +11,7 @@
 	"atmospheric_pressure_limit": 4,
 	"capacity": 192,
 	"slots": {
-		"engine": 1,
+		"hyperdrive": 1,
 		"cabin": 5,
 		"scoop": 2,
 		"laser_front": 1,

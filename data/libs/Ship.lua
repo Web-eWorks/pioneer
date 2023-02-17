@@ -83,7 +83,7 @@ end
 --
 -- Return the number of item in a given slot
 --
--- > if ship:GetEquipCountOccupied("engine") > 1 then HyperdriveOverLoadAndExplode(ship) end
+-- > if ship:GetEquipCountOccupied("hyperdrive") > 1 then HyperdriveOverLoadAndExplode(ship) end
 --
 -- Availability:
 --
@@ -398,7 +398,7 @@ end
 --  experimental
 --
 Ship.HyperjumpTo = function (self, path, is_legal)
-	local engine = self:GetEquip("engine", 1)
+	local engine = self:GetEquip("hyperdrive", 1)
 	local wheels = self:GetWheelState()
 	if not engine then
 		return "NO_DRIVE"
@@ -439,7 +439,7 @@ Ship.GetHyperspaceDetails = function (self, source, destination)
 		source = Game.system.path
 	end
 
-	local engine = self:GetEquip("engine", 1)
+	local engine = self:GetEquip("hyperdrive", 1)
 	if not engine then
 		return "NO_DRIVE", 0, 0, 0
 	elseif source:IsSameSystem(destination) then
@@ -463,7 +463,7 @@ Ship.GetHyperspaceDetails = function (self, source, destination)
 end
 
 Ship.GetHyperspaceRange = function (self)
-	local engine = self:GetEquip("engine", 1)
+	local engine = self:GetEquip("hyperdrive", 1)
 	if not engine then
 		return 0, 0
 	end
@@ -919,7 +919,7 @@ local onEnterSystem = function (ship)
 			end
 		end
 	end
-	local engine = ship:GetEquip("engine", 1)
+	local engine = ship:GetEquip("hyperdrive", 1)
 	if engine then
 		engine:OnLeaveHyperspace(ship)
 	end

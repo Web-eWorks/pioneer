@@ -123,7 +123,7 @@ Trader.doOrbit = function (ship)
 end
 
 local getSystem = function (ship)
-	local max_range = ship:GetEquip('engine', 1):GetMaximumRange(ship)
+	local max_range = ship:GetEquip('hyperdrive', 1):GetMaximumRange(ship)
 	max_range = math.min(max_range, 30)
 	local min_range = max_range / 2;
 	local systems_in_range = Game.system:GetNearbySystems(min_range)
@@ -244,7 +244,7 @@ Trader.getNearestStarport = function(ship, current)
 end
 
 Trader.addFuel = function (ship)
-	local drive = ship:GetEquip('engine', 1)
+	local drive = ship:GetEquip('hyperdrive', 1)
 
 	-- a drive must be installed
 	if not drive then
