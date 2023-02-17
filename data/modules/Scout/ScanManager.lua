@@ -186,6 +186,11 @@ function ScanManager:UpdateSensorEquipInfo()
 		return
 	end
 
+	-- limit to only planet scanner sensors
+	sensors = utils.filter_array(sensors, function(v)
+		return v:ClassName() == "BodyScannerType"
+	end)
+
 	-- rebuild the list of sensors from the ship's equipment
 	-- we don't attempt to preserve the existing list because we have no idea
 	-- which sensor was added/removed and where

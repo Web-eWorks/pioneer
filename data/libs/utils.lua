@@ -367,6 +367,10 @@ utils.inherits = function (baseClass, name)
 		return new_class
 	end
 
+	function new_class:ClassName()
+		return name
+	end
+
 	function new_class.Unserialize(data)
 		local tmp = base_class.Unserialize(data)
 		setmetatable(tmp, new_class.meta)
