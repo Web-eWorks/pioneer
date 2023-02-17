@@ -2,8 +2,9 @@
 -- Licensed under the terms of the GPL v3. See licenses/GPL-3.txt
 
 local EquipType = require 'EquipType'.EquipType
+local Equipment = package.core.Equipment
 
-local misc = require 'EquipType'.misc
+local misc = Equipment.misc
 
 misc.autopilot = EquipType.New({
 	l10n_key="AUTOPILOT", slots="autopilot", price=1400,

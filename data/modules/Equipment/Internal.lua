@@ -2,11 +2,19 @@
 -- Licensed under the terms of the GPL v3. See licenses/GPL-3.txt
 
 local Commodities = require 'Commodities'
-local EquipType = require 'EquipType'.EquipType
-local HyperdriveType = require 'EquipType'.HyperdriveType
+local EquipTypes = require 'EquipType'
 
-local misc = require 'EquipType'.misc
-local hyperspace = require 'EquipType'.hyperspace
+local EquipType = EquipTypes.EquipType
+local HyperdriveType = EquipTypes.HyperdriveType
+
+local utils = require 'utils'
+
+--==============================================================================
+
+local Equipment = package.core.Equipment
+
+local misc = Equipment.misc
+local hyperspace = Equipment.hyperspace
 
 misc.atmospheric_shielding = EquipType.New({
 	l10n_key="ATMOSPHERIC_SHIELDING", slots="atmo_shield", price=200,

@@ -5,8 +5,10 @@ local EquipType = require 'EquipType'.EquipType
 local LaserType = require 'EquipType'.LaserType
 local LaserType2 = require 'EquipType'.LaserType2
 
-local misc = require 'EquipType'.misc
-local laser = require 'EquipType'.laser
+local Equipment = package.core.Equipment
+
+local misc = Equipment.misc
+local laser = Equipment.laser
 
 misc.missile_unguided = EquipType.New({
 	l10n_key="MISSILE_UNGUIDED", slots="missile", price=30,
@@ -33,7 +35,7 @@ misc.missile_naval = EquipType.New({
 	icon_name="equip_missile_naval"
 })
 
-
+--[[
 laser.pulsecannon_1mw = LaserType2.New({
 	l10n_key="PULSECANNON_1MW", price=600, capabilities={mass=1},
 	slots = {"laser_front"}, gun_data = {
@@ -45,8 +47,9 @@ laser.pulsecannon_1mw = LaserType2.New({
 		model = nil, numBarrels = 1
 	}, purchasable = true, tech_level = 3
 })
+--]]
 
---[[
+---[[
 laser.pulsecannon_1mw = LaserType.New({
 	l10n_key="PULSECANNON_1MW", price=600, capabilities={mass=1},
 	slots = {"laser_front", "laser_rear"}, laser_stats = {

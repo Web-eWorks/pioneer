@@ -10,10 +10,6 @@ local GunData = require 'GunData'
 local Game = package.core['Game']
 local Space = package.core['Space']
 
-local laser = {}
-local hyperspace = {}
-local misc = {}
-
 --
 -- Class: EquipType
 --
@@ -60,6 +56,12 @@ function EquipType._createTransient(obj)
 		description = l:get(obj.l10n_key .. "_DESCRIPTION") or "",
 		name = l[obj.l10n_key] or ""
 	}
+end
+
+---@param id string
+function EquipType.SplitId(id)
+	local dot = string.find(id, ".", 1, true)
+	return id:sub(1, dot-1), id:sub(dot+1, -1)
 end
 
 function EquipType.isProto(inst)
@@ -426,9 +428,6 @@ SensorType:SetupPrototype()
 BodyScannerType:SetupPrototype()
 
 return {
-	laser			= laser,
-	hyperspace		= hyperspace,
-	misc			= misc,
 	EquipType		= EquipType,
 	LaserType		= LaserType,
 	LaserType2		= LaserType2,

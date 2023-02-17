@@ -1,10 +1,17 @@
 -- Copyright © 2008-2023 Pioneer Developers. See AUTHORS.txt for details
 -- Licensed under the terms of the GPL v3. See licenses/GPL-3.txt
 
-local EquipType = require 'EquipType'.EquipType
-local BodyScannerType = require 'EquipType'.BodyScannerType
+local EquipTypes = require 'EquipType'
 
-local misc = require 'EquipType'.misc
+local EquipType = EquipTypes.EquipType
+local SensorType = EquipTypes.SensorType
+local BodyScannerType = EquipTypes.BodyScannerType
+
+--==============================================================================
+
+local Equipment = package.core.Equipment
+
+local misc = Equipment.misc
 
 misc.fuel_scoop = EquipType.New({
 	l10n_key="FUEL_SCOOP", slots="scoop", price=3500,
