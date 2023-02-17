@@ -548,7 +548,7 @@ int luaopen_import(lua_State *L)
 
 	// core imports cache table
 	lua_newtable(L);
-	pi_lua_readonly_table_proxy(L, -1);
+	lua_pushvalue(L, -1);
 	lua_setfield(L, package_table, "core");
 	lua_setfield(L, LUA_REGISTRYINDEX, "CoreImports");
 
