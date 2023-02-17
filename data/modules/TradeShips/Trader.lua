@@ -1,7 +1,7 @@
 -- Copyright © 2008-2023 Pioneer Developers. See AUTHORS.txt for details
 -- Licensed under the terms of the GPL v3. See licenses/GPL-3.txt
 
-local e = require 'Equipment'
+local Equipment = require 'Equipment'
 local Engine = require 'Engine'
 local Game = require 'Game'
 local Ship = require 'Ship'
@@ -20,13 +20,13 @@ Trader.addEquip = function (ship)
 	local ship_type = ShipDef[ship.shipId]
 
 	-- add standard equipment
-	ship:AddEquip(e.hyperspace['hyperdrive_'..tostring(ship_type.hyperdriveClass)])
+	ship:AddEquip(Equipment.hyperspace['hyperdrive_'..tostring(ship_type.hyperdriveClass)])
 	if ShipDef[ship.shipId].equipSlotCapacity.atmo_shield > 0 then
-		ship:AddEquip(e.misc.atmospheric_shielding)
+		ship:AddEquip(Equipment.misc.atmospheric_shielding)
 	end
-	ship:AddEquip(e.misc.radar)
-	ship:AddEquip(e.misc.autopilot)
-	ship:AddEquip(e.misc.cargo_life_support)
+	ship:AddEquip(Equipment.misc.radar)
+	ship:AddEquip(Equipment.misc.autopilot)
+	ship:AddEquip(Equipment.misc.cargo_life_support)
 
 	-- add defensive equipment based on lawlessness, luck and size
 	local lawlessness = Game.system.lawlessness
@@ -34,30 +34,30 @@ Trader.addEquip = function (ship)
 
 	if Engine.rand:Number(1) - 0.1 < lawlessness then
 		local num = math.floor(math.sqrt(ship.freeCapacity / 50)) -
-			ship:CountEquip(e.misc.shield_generator)
+			ship:CountEquip(Equipment.misc.shield_generator)
 		for i = 1, num do
-			ship:AddEquip(e.misc.shield_generator)
+			ship:AddEquip(Equipment.misc.shield_generator)
 		end
 
 		if ship_type.equipSlotCapacity.energy_booster > 0 and
 			Engine.rand:Number(1) + 0.5 - size_factor < lawlessness then
-			ship:AddEquip(e.misc.shield_energy_booster)
+			ship:AddEquip(Equipment.misc.shield_energy_booster)
 		end
 	end
 
 	-- we can't use these yet
 	if ship_type.equipSlotCapacity.ecm > 0 then
 		if Engine.rand:Number(1) + 0.2 < lawlessness then
-			ship:AddEquip(e.misc.ecm_advanced)
+			ship:AddEquip(Equipment.misc.ecm_advanced)
 		elseif Engine.rand:Number(1) < lawlessness then
-			ship:AddEquip(e.misc.ecm_basic)
+			ship:AddEquip(Equipment.misc.ecm_basic)
 		end
 	end
 
 	-- this should be rare
 	if ship_type.equipSlotCapacity.hull_autorepair > 0 and
 		Engine.rand:Number(1) + 0.75 - size_factor < lawlessness then
-		ship:AddEquip(e.misc.hull_autorepair)
+		ship:AddEquip(Equipment.misc.hull_autorepair)
 	end
 end
 
@@ -216,7 +216,7 @@ local function isAtmo(starport)
 end
 
 local function canAtmo(ship)
-	return ship:CountEquip(e.misc.atmospheric_shielding) ~= 0
+	return ship:CountEquip(Equipment.misc.atmospheric_shielding) ~= 0
 end
 
 Trader.isStarportAcceptableForShip = function(starport, ship)

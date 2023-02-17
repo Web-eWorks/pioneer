@@ -4,7 +4,7 @@
 local ShipDef = require 'ShipDef'
 local debugView = require 'pigui.views.debug'
 local Engine = require 'Engine'
-local e = require 'Equipment'
+local Equipment = require 'Equipment'
 local Game = require 'Game'
 local ui = require 'pigui.baseui'
 local utils = require 'utils'
@@ -306,7 +306,7 @@ debugView.registerTab('debug-trade-ships', function()
 
 			local equips = { "misc", "hyperspace", "laser" }
 			for _,t in ipairs(equips) do
-				for _,et in pairs(e[t]) do
+				for _,et in pairs(Equipment[t]) do
 					local count = ship:CountEquip(et)
 					if count > 0 then
 						local all_mass = count * et.capabilities.mass

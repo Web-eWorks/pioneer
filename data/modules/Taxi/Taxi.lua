@@ -13,7 +13,7 @@ local Serializer = require 'Serializer'
 local Character = require 'Character'
 local ShipDef = require 'ShipDef'
 local Ship = require 'Ship'
-local eq = require 'Equipment'
+local Equipment = require 'Equipment'
 local utils = require 'utils'
 
 -- Get the language resource
@@ -109,14 +109,14 @@ local missions = {}
 local passengers = 0
 
 local add_passengers = function (group)
-	Game.player:RemoveEquip(eq.misc.cabin,  group)
-	Game.player:AddEquip(eq.misc.cabin_occupied, group)
+	Game.player:RemoveEquip(Equipment.misc.cabin,  group)
+	Game.player:AddEquip(Equipment.misc.cabin_occupied, group)
 	passengers = passengers + group
 end
 
 local remove_passengers = function (group)
-	Game.player:RemoveEquip(eq.misc.cabin_occupied,  group)
-	Game.player:AddEquip(eq.misc.cabin, group)
+	Game.player:RemoveEquip(Equipment.misc.cabin_occupied,  group)
+	Game.player:AddEquip(Equipment.misc.cabin, group)
 	passengers = passengers - group
 end
 
@@ -354,12 +354,12 @@ local onEnterSystem = function (player)
 
 				if Engine.rand:Number(1) <= risk then
 					local shipdef = shipdefs[Engine.rand:Integer(1,#shipdefs)]
-					local default_drive = eq.hyperspace['hyperdrive_'..tostring(shipdef.hyperdriveClass)]
+					local default_drive = Equipment.hyperspace['hyperdrive_'..tostring(shipdef.hyperdriveClass)]
 
 					local max_laser_size = shipdef.capacity - default_drive.capabilities.mass
 					local laserdefs = utils.build_array(utils.filter(
 						function (k,l) return l:IsValidSlot('laser_front') and l.capabilities.mass <= max_laser_size and l.l10n_key:find("PULSECANNON") end,
-						pairs(eq.laser)
+						pairs(Equipment.laser)
 					))
 					local laserdef = laserdefs[Engine.rand:Integer(1,#laserdefs)]
 
@@ -367,12 +367,12 @@ local onEnterSystem = function (player)
 					ship:SetLabel(Ship.MakeRandomLabel())
 					ship:AddEquip(default_drive)
 					ship:AddEquip(laserdef)
-					ship:AddEquip(eq.misc.shield_generator, math.ceil(risk * 3))
+					ship:AddEquip(Equipment.misc.shield_generator, math.ceil(risk * 3))
 					if Engine.rand:Number(2) <= risk then
-						ship:AddEquip(eq.misc.laser_cooling_booster)
+						ship:AddEquip(Equipment.misc.laser_cooling_booster)
 					end
 					if Engine.rand:Number(3) <= risk then
-						ship:AddEquip(eq.misc.shield_energy_booster)
+						ship:AddEquip(Equipment.misc.shield_energy_booster)
 					end
 					ship:AIKill(Game.player)
 				end
