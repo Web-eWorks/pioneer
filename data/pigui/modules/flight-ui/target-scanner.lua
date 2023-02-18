@@ -19,15 +19,15 @@ local player = nil
 local gameView = require 'pigui.views.game'
 
 local shipInfoLowerBound
+---@param target Ship
 local function displayTargetScannerFor(target, offset)
 	local hull = target:GetHullPercent()
 	local shield = target:GetShieldsPercent()
 	local class = target:GetShipType()
 	local label = target.label
 	local engine = target:GetEquip('hyperdrive', 1)
-	local stats = target:GetStats()
-	local mass = stats.staticMass
-	local cargo = stats.usedCargo
+	local mass = target.staticMass
+	local cargo = target.usedCargo
 	if engine then
 		engine = engine:GetName()
 	else
@@ -79,10 +79,9 @@ local function displayTargetScanner()
 		local target = player:GetNavTarget()
 		if target and target:IsHyperspaceCloud() then
 			local arrival = target:IsArrival()
-			local ship = target:GetShip()
+			local ship = target:GetShip() ---@type Ship
 			if ship then
-				local stats = ship:GetStats()
-				local mass = stats.staticMass
+				local mass = ship.staticMass
 				local path,destName = ship:GetHyperspaceDestination()
 				local date = target:GetDueDate()
 				local dueDate = ui.Format.Datetime(date)

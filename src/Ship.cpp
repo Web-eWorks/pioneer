@@ -645,7 +645,6 @@ void Ship::UpdateEquipStats()
 	p.Set("usedCapacity", m_stats.used_capacity);
 	p.Set("freeCapacity", m_stats.free_capacity);
 
-	p.Set("totalMass", m_stats.static_mass);
 	p.Set("staticMass", m_stats.static_mass);
 
 	float shield_cap = p.Get("shield_cap");

@@ -36,7 +36,6 @@
 ---@field totalCargo number
 ---
 ---@field staticMass number
----@field totalMass number
 ---
 ---@field hyperspaceRange number
 ---@field maxHyperspaceRange number
