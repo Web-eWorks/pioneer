@@ -6,9 +6,11 @@
 #include "Beam.h"
 #include "Game.h"
 #include "Pi.h"
-#include "imgui/imgui.h"
+#include "core/Log.h"
 #include "lua/LuaBodyComponent.h"
-#include "scenegraph/MatrixTransform.h"
+#include "scenegraph/Tag.h"
+
+#include "imgui/imgui.h"
 
 REGISTER_COMPONENT_TYPE(GunManager) {
 	BodyComponentDB::RegisterComponent<GunManager>("GunManager");
@@ -26,7 +28,7 @@ void GunManager::Init(DynamicBody *b, const ShipType *t, SceneGraph::Model *m)
 		if (hardpoint.type != ShipType::HardpointTag::Gun)
 			continue;
 
-		SceneGraph::MatrixTransform *tag = m->FindTagByName(hardpoint.tagname);
+		SceneGraph::Tag *tag = m->FindTagByName(hardpoint.tagname);
 		if (tag == nullptr) {
 			Log::Warning("Missing hardpoint tag {} in model {}\n", hardpoint.tagname, m->GetName());
 			continue;
