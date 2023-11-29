@@ -90,7 +90,7 @@ float predictDensityIn(const in float radius, const in float atmosphereHeight, c
 	}
 }
 
-vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const in vec3 center, in float tmin, in float tmax)
+vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const in vec3 center, const in vec2 atmosDist)
 {
 	vec3 betaR = vec3(3.8e-6f, 13.5e-6f, 33.1e-6f);
 	vec3 betaM = vec3(21e-6f);
@@ -98,6 +98,9 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 	float earthRadius = geosphereRadius,
 	      atmosphereRadius = geosphereRadius * geosphereAtmosTopRad,
 	      atmosphereHeight = atmosphereRadius - earthRadius;
+
+	float tmin = atmosDist.x * geosphereRadius;
+	float tmax = atmosDist.y * geosphereRadius;
 
 	float t0 = 0.f;
 	float t1 = 0.f;
