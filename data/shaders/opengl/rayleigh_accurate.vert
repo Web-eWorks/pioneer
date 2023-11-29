@@ -4,7 +4,6 @@
 #include "attributes.glsl"
 #include "lib.glsl"
 #include "basesphere_uniforms.glsl"
-#include "rayleigh.glsl"
 
 out vec4 varyingEyepos;
 
