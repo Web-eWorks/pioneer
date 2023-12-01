@@ -1,5 +1,6 @@
 
 
+
 void sphereEntryExitDist(out float near, out float far, const in vec3 sphereCenter, const in vec3 eyeTo, const in float radius)
 {
 	vec3 v = -sphereCenter;
@@ -105,6 +106,14 @@ float predictDensityInOut(const in vec3 sample, const in vec3 dir, const in vec3
     return opticalDepth;
 }
 
+float predictDensityBetweenPoints(const in vec3 start, const in vec3 end, const in vec3 dir, const in vec3 center, const in float radius, const in float atmosphereHeight, const in vec3 coefficients)
+{
+	float d1 = predictDensityInOut(start, dir, center, radius, atmosphereHeight, coefficients);
+	float d2 = predictDensityInOut(end, dir, center, radius, atmosphereHeight, coefficients);
+
+	return d1 - d2;
+}
+
 vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const in vec3 center, const in vec2 atmosDist)
 {
 	vec3 betaR = vec3(3.8e-6f, 13.5e-6f, 33.1e-6f);
@@ -125,17 +134,72 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 
 	// solve Cylinder entry/exit dist
 	vec2 cylinder_intersect = rayCylinderIntersect(dir, center, sunDirection, geosphereRadius);
+	bool hasIntersect = cylinder_intersect.x != 0 || cylinder_intersect.y != 0;
+
+	vec3 cylinder_near = center - dir * cylinder_intersect.x;
+	vec3 cylinder_far  = center - dir * cylinder_intersect.y;
+
+	// test if ray passes through shadow
+	float a = dot(cylinder_near, sunDirection);
+	float b = dot(cylinder_far , sunDirection);
+	bool intersectsShadow = hasIntersect && (a > 0.f || b > 0.f);
+
+	/*
+	* We have three options:
+	* 1) Ray does not intersect shadow
+	*    Do nothing
+	* 2) Ray intersects shadow, starts inside
+	*    (cylinder_intersect.y, tmax)
+	* 3) Ray intersects shadow, starts outside
+	*    (tmin, cylinder_intersect.x) + (cylinder_intersect.y, tmax)
+	*/
+
+	bool startsInside = raySphereIntersect(center, sunDirection, geosphereRadius).x != 0.f;
+
+	if (intersectsShadow) {
+		float new_tmin = startsInside ? min(tmax, cylinder_intersect.y) : tmin;
+		float new_tmax = startsInside ? tmax : max(tmin, cylinder_intersect.x);
+
+		tmin = new_tmin;
+		tmax = new_tmax;
+	}
+
+	if (tmin == tmax)
+		return vec3(0.f);
 
 	int numSamples = 16;
 	float segmentLength = (tmax - tmin) / numSamples;
 	float tCurrent = tmin;
 	vec3 sumR = vec3(0.0);
 	vec3 sumM = vec3(0.0); // mie and rayleigh contribution
-	float opticalDepthR = 0, opticalDepthM = 0;
 	float mu = dot(dir, sunDirection); // mu in the paper which is the cosine of the angle between the sun direction and the ray direction
 	float phaseR = 3.f / (16.f * 3.141592) * (1 + mu * mu);
 	float g = 0.76f;
 	float phaseM = 3.f / (8.f * 3.141592) * ((1.f - g * g) * (1.f + mu * mu)) / ((2.f + g * g) * pow(1.f + g * g - 2.f * g * mu, 1.5f));
+
+	float opticalDepthR = 0, opticalDepthM = 0;
+	//float initialOpticalDepthR = 0, initialOpticalDepthM = 0;
+	if (tmin != 0) {
+#if 0
+		vec3 v1 = vec3(0.0);
+		vec3 v2 = tmin * dir;
+
+		opticalDepthR += predictDensityBetweenPoints(v1, v2, dir, center, earthRadius, atmosphereHeight, coefficientsR);
+		opticalDepthM += predictDensityBetweenPoints(v1, v2, dir, center, earthRadius, atmosphereHeight, coefficientsM);
+#else
+		for (int i = 0; i < numSamples; ++i) {
+			float iCurrent = 0.f;
+			float isegmentLength = tmin / numSamples;
+			vec3 samplePosition = vec3(iCurrent + isegmentLength * 0.5f) * dir;
+
+			float hr, hm;
+			scatter(hr, hm, samplePosition, center);
+			opticalDepthR += exp(hr) * isegmentLength;
+			opticalDepthM += exp(hm) * isegmentLength;
+			iCurrent += isegmentLength;
+		}
+#endif
+	}
 
 	for (int i = 0; i < numSamples; ++i) {
 		vec3 samplePosition = vec3(tCurrent + segmentLength * 0.5f) * dir;
