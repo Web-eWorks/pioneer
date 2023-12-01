@@ -106,14 +106,6 @@ float predictDensityInOut(const in vec3 sample, const in vec3 dir, const in vec3
     return opticalDepth;
 }
 
-float predictDensityBetweenPoints(const in vec3 start, const in vec3 end, const in vec3 dir, const in vec3 center, const in float radius, const in float atmosphereHeight, const in vec3 coefficients)
-{
-	float d1 = predictDensityInOut(start, dir, center, radius, atmosphereHeight, coefficients);
-	float d2 = predictDensityInOut(end, dir, center, radius, atmosphereHeight, coefficients);
-
-	return d1 - d2;
-}
-
 vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const in vec3 center, const in vec2 atmosDist)
 {
 	vec3 betaR = vec3(3.8e-6f, 13.5e-6f, 33.1e-6f);
@@ -178,15 +170,7 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 	float phaseM = 3.f / (8.f * 3.141592) * ((1.f - g * g) * (1.f + mu * mu)) / ((2.f + g * g) * pow(1.f + g * g - 2.f * g * mu, 1.5f));
 
 	float opticalDepthR = 0, opticalDepthM = 0;
-	//float initialOpticalDepthR = 0, initialOpticalDepthM = 0;
 	if (tmin != 0) {
-#if 0
-		vec3 v1 = vec3(0.0);
-		vec3 v2 = tmin * dir;
-
-		opticalDepthR += predictDensityBetweenPoints(v1, v2, dir, center, earthRadius, atmosphereHeight, coefficientsR);
-		opticalDepthM += predictDensityBetweenPoints(v1, v2, dir, center, earthRadius, atmosphereHeight, coefficientsM);
-#else
 		for (int i = 0; i < numSamples; ++i) {
 			float iCurrent = 0.f;
 			float isegmentLength = tmin / numSamples;
@@ -198,7 +182,6 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 			opticalDepthM += exp(hm) * isegmentLength;
 			iCurrent += isegmentLength;
 		}
-#endif
 	}
 
 	for (int i = 0; i < numSamples; ++i) {
@@ -213,15 +196,7 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 		float opticalDepthLightR = 0, opticalDepthLightM = 0;
 		vec3 samplePositionLight = samplePosition;
 
-		// if light ray intersects planet, continue
 		vec3 sampleGeoCenter = center - samplePosition;
-		vec2 groundLightDist = raySphereIntersect(sampleGeoCenter, sunDirection, geosphereRadius);
-		if (groundLightDist.x > 0.f) {
-			// light ray intersects
-			tCurrent += segmentLength;
-			continue;
-		}
-
 		opticalDepthLightR = predictDensityInOut(samplePositionLight, sunDirection, sampleGeoCenter, earthRadius, atmosphereHeight, coefficientsR);
 		opticalDepthLightM = predictDensityInOut(samplePositionLight, sunDirection, sampleGeoCenter, earthRadius, atmosphereHeight, coefficientsM);
 
