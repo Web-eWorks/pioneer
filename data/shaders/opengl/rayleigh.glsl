@@ -122,6 +122,10 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 	sphereEntryExitDist(t0, t1, vec3(0.f), dir, atmosphereRadius);
 	if (t0 == 0.f && t1 == 0.f) return vec3(0.f);
 	if (t0 > tmin && t0 > 0) tmin = t0;
+
+	// solve Cylinder entry/exit dist
+	vec2 cylinder_intersect = rayCylinderIntersect(dir, center, sunDirection, geosphereRadius);
+
 	int numSamples = 16;
 	float segmentLength = (tmax - tmin) / numSamples;
 	float tCurrent = tmin;
