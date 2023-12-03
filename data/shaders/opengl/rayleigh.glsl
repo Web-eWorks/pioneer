@@ -129,14 +129,8 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 		return vec3(0.f);
 
 	int numSamples = 16;
-	float segmentLength = (tmax - tmin) / numSamples;
-	float tCurrent = tmin;
 	vec3 sumR = vec3(0.0);
 	vec3 sumM = vec3(0.0); // mie and rayleigh contribution
-	float mu = dot(dir, sunDirection); // mu in the paper which is the cosine of the angle between the sun direction and the ray direction
-	float phaseR = 3.f / (16.f * 3.141592) * (1 + mu * mu);
-	float g = 0.76f;
-	float phaseM = 3.f / (8.f * 3.141592) * ((1.f - g * g) * (1.f + mu * mu)) / ((2.f + g * g) * pow(1.f + g * g - 2.f * g * mu, 1.5f));
 
 	vec2 opticalDepth = vec2(0.f);
 	if (tmin != 0) {
@@ -145,15 +139,18 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 			float isegmentLength = tmin / numSamples;
 			vec3 samplePosition = vec3(iCurrent + isegmentLength * 0.5f) * dir;
 
-			// primary ray is approximated by (density * segmentLength)
+			// primary ray is approximated by (density * isegmentLength)
 			vec2 density;
 			scatter(density, samplePosition, center);
 			opticalDepth += exp(density) * isegmentLength;
+
 			iCurrent += isegmentLength;
 		}
 	}
 
+	float tCurrent = tmin;
 	for (int i = 0; i < numSamples; ++i) {
+		float segmentLength = (tmax - tmin) / numSamples;
 		vec3 samplePosition = vec3(tCurrent + segmentLength * 0.5f) * dir;
 
 		vec2 density;
@@ -177,6 +174,11 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 		sumM += attenuationM;
 		tCurrent += segmentLength;
 	}
+
+	float mu = dot(dir, sunDirection); // mu in the paper which is the cosine of the angle between the sun direction and the ray direction
+	float phaseR = 3.f / (16.f * 3.141592) * (1 + mu * mu);
+	float g = 0.76f;
+	float phaseM = 3.f / (8.f * 3.141592) * ((1.f - g * g) * (1.f + mu * mu)) / ((2.f + g * g) * pow(1.f + g * g - 2.f * g * mu, 1.5f));
 
 	vec3 ret = (sumR * betaR * phaseR + sumM * betaM * phaseM);
 	return ret;
