@@ -1,26 +1,3 @@
-
-
-
-void sphereEntryExitDist(out float near, out float far, const in vec3 sphereCenter, const in vec3 eyeTo, const in float radius)
-{
-	vec3 v = -sphereCenter;
-	vec3 dir = normalize(eyeTo);
-	float b = -dot(v, dir);
-	float det = (b * b) - dot(v, v) + (radius * radius);
-	float i1, i2;
-	near = 0.0;
-	far = 0.0;
-	if (det > 0.0) {
-		det = sqrt(det);
-		i1 = b - det;
-		i2 = b + det;
-		if (i2 > 0.0) {
-			near = max(i1, 0.0);
-			far = i2;
-		}
-	}
-}
-
 float height(const in vec3 orig, const in vec3 center)
 {
 	vec3 r = orig - center;
@@ -117,12 +94,6 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 
 	float tmin = atmosDist.x * geosphereRadius;
 	float tmax = atmosDist.y * geosphereRadius;
-
-	float t0 = 0.f;
-	float t1 = 0.f;
-	sphereEntryExitDist(t0, t1, vec3(0.f), dir, atmosphereRadius);
-	if (t0 == 0.f && t1 == 0.f) return vec3(0.f);
-	if (t0 > tmin && t0 > 0) tmin = t0;
 
 	// solve Cylinder entry/exit dist
 	vec2 cylinder_intersect = rayCylinderIntersect(dir, center, sunDirection, geosphereRadius);
