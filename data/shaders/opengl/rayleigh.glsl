@@ -117,15 +117,17 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 
 	bool startsInside = raySphereIntersect(center, sunDirection, geosphereRadius).x != 0.f;
 
+	float rayMin = atmosMin;
+	float rayMax = atmosMax;
 	if (intersectsShadow) {
 		float new_tmin = min(atmosMax, cylinder_intersect.y);
 		float new_tmax = max(atmosMin, cylinder_intersect.x);
 
-		atmosMin = startsInside ? new_tmin : atmosMin;
-		atmosMax = startsInside ? atmosMax : new_tmax;
+		rayMin = startsInside ? new_tmin : atmosMin;
+		rayMax = startsInside ? atmosMax : new_tmax;
 	}
 
-	if (atmosMin == atmosMax)
+	if (rayMin == rayMax)
 		return vec3(0.f);
 
 	int numSamples = 16;
@@ -133,10 +135,10 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 	vec3 sumM = vec3(0.0); // mie and rayleigh contribution
 
 	vec2 opticalDepth = vec2(0.f);
-	if (atmosMin != 0) {
+	if (atmosMin != rayMin) {
+		float iCurrent = atmosMin;
+		float isegmentLength = (rayMin - atmosMin) / numSamples;
 		for (int i = 0; i < numSamples; ++i) {
-			float iCurrent = 0.f;
-			float isegmentLength = atmosMin / numSamples;
 			vec3 samplePosition = vec3(iCurrent + isegmentLength * 0.5f) * dir;
 
 			// primary ray is approximated by (density * isegmentLength)
@@ -148,9 +150,9 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 		}
 	}
 
-	float tCurrent = atmosMin;
+	float tCurrent = rayMin;
+	float segmentLength = (atmosMax - rayMin) / numSamples;
 	for (int i = 0; i < numSamples; ++i) {
-		float segmentLength = (atmosMax - atmosMin) / numSamples;
 		vec3 samplePosition = vec3(tCurrent + segmentLength * 0.5f) * dir;
 
 		vec2 density;
