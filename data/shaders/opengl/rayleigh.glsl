@@ -90,8 +90,8 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 	      atmosphereRadius = geosphereRadius * geosphereAtmosTopRad,
 	      atmosphereHeight = atmosphereRadius - earthRadius;
 
-	float tmin = atmosDist.x * geosphereRadius;
-	float tmax = atmosDist.y * geosphereRadius;
+	float atmosMin = atmosDist.x * geosphereRadius;
+	float atmosMax = atmosDist.y * geosphereRadius;
 
 	// solve Cylinder entry/exit dist
 	vec2 cylinder_intersect = rayCylinderIntersect(dir, center, sunDirection, geosphereRadius);
@@ -118,14 +118,14 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 	bool startsInside = raySphereIntersect(center, sunDirection, geosphereRadius).x != 0.f;
 
 	if (intersectsShadow) {
-		float new_tmin = min(tmax, cylinder_intersect.y);
-		float new_tmax = max(tmin, cylinder_intersect.x);
+		float new_tmin = min(atmosMax, cylinder_intersect.y);
+		float new_tmax = max(atmosMin, cylinder_intersect.x);
 
-		tmin = startsInside ? new_tmin : tmin;
-		tmax = startsInside ? tmax : new_tmax;
+		atmosMin = startsInside ? new_tmin : atmosMin;
+		atmosMax = startsInside ? atmosMax : new_tmax;
 	}
 
-	if (tmin == tmax)
+	if (atmosMin == atmosMax)
 		return vec3(0.f);
 
 	int numSamples = 16;
@@ -133,10 +133,10 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 	vec3 sumM = vec3(0.0); // mie and rayleigh contribution
 
 	vec2 opticalDepth = vec2(0.f);
-	if (tmin != 0) {
+	if (atmosMin != 0) {
 		for (int i = 0; i < numSamples; ++i) {
 			float iCurrent = 0.f;
-			float isegmentLength = tmin / numSamples;
+			float isegmentLength = atmosMin / numSamples;
 			vec3 samplePosition = vec3(iCurrent + isegmentLength * 0.5f) * dir;
 
 			// primary ray is approximated by (density * isegmentLength)
@@ -148,9 +148,9 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 		}
 	}
 
-	float tCurrent = tmin;
+	float tCurrent = atmosMin;
 	for (int i = 0; i < numSamples; ++i) {
-		float segmentLength = (tmax - tmin) / numSamples;
+		float segmentLength = (atmosMax - atmosMin) / numSamples;
 		vec3 samplePosition = vec3(tCurrent + segmentLength * 0.5f) * dir;
 
 		vec2 density;
