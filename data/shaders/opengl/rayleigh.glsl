@@ -118,11 +118,11 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 	bool startsInside = raySphereIntersect(center, sunDirection, geosphereRadius).x != 0.f;
 
 	if (intersectsShadow) {
-		float new_tmin = startsInside ? min(tmax, cylinder_intersect.y) : tmin;
-		float new_tmax = startsInside ? tmax : max(tmin, cylinder_intersect.x);
+		float new_tmin = min(tmax, cylinder_intersect.y);
+		float new_tmax = max(tmin, cylinder_intersect.x);
 
-		tmin = new_tmin;
-		tmax = new_tmax;
+		tmin = startsInside ? new_tmin : tmin;
+		tmax = startsInside ? tmax : new_tmax;
 	}
 
 	if (tmin == tmax)
