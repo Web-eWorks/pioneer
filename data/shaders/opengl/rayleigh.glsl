@@ -6,15 +6,13 @@ float height(const in vec3 orig, const in vec3 center)
 	return height;
 }
 
-void scatter(out float hr, out float hm, const in vec3 orig, const in vec3 center)
+void scatter(out vec2 density, const in vec3 orig, const in vec3 center)
 {
-	float Hr = 7994;
-	float Hm = 1200;
+	vec2 baricStep = vec2(7994.f, 1200.f);
 
 	float height = height(orig, center);
 
-	hr = -height / Hr;
-	hm = -height / Hm;
+	density = -height / baricStep;
 }
 
 void findClosestHeight(out float h, out float t, const in vec3 orig, const in vec3 dir, const in vec3 center)
@@ -140,17 +138,17 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 	float g = 0.76f;
 	float phaseM = 3.f / (8.f * 3.141592) * ((1.f - g * g) * (1.f + mu * mu)) / ((2.f + g * g) * pow(1.f + g * g - 2.f * g * mu, 1.5f));
 
-	float opticalDepthR = 0, opticalDepthM = 0;
+	vec2 opticalDepth = vec2(0.f);
 	if (tmin != 0) {
 		for (int i = 0; i < numSamples; ++i) {
 			float iCurrent = 0.f;
 			float isegmentLength = tmin / numSamples;
 			vec3 samplePosition = vec3(iCurrent + isegmentLength * 0.5f) * dir;
 
-			float hr, hm;
-			scatter(hr, hm, samplePosition, center);
-			opticalDepthR += exp(hr) * isegmentLength;
-			opticalDepthM += exp(hm) * isegmentLength;
+			// primary ray is approximated by (density * segmentLength)
+			vec2 density;
+			scatter(density, samplePosition, center);
+			opticalDepth += exp(density) * isegmentLength;
 			iCurrent += isegmentLength;
 		}
 	}
@@ -158,22 +156,21 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 	for (int i = 0; i < numSamples; ++i) {
 		vec3 samplePosition = vec3(tCurrent + segmentLength * 0.5f) * dir;
 
-		float hr, hm;
-		scatter(hr, hm, samplePosition, center);
-		opticalDepthR += exp(hr) * segmentLength;
-		opticalDepthM += exp(hm) * segmentLength;
+		vec2 density;
+		scatter(density, samplePosition, center);
+		opticalDepth += exp(density) * segmentLength;
 
 		// light optical depth
-		float opticalDepthLightR = 0, opticalDepthLightM = 0;
+		vec2 opticalDepthLight = vec2(0.f);
 		vec3 samplePositionLight = samplePosition;
 
 		vec3 sampleGeoCenter = center - samplePosition;
-		opticalDepthLightR = predictDensityInOut(samplePositionLight, sunDirection, sampleGeoCenter, earthRadius, atmosphereHeight, coefficientsR);
-		opticalDepthLightM = predictDensityInOut(samplePositionLight, sunDirection, sampleGeoCenter, earthRadius, atmosphereHeight, coefficientsM);
+		opticalDepthLight.x = predictDensityInOut(samplePositionLight, sunDirection, sampleGeoCenter, earthRadius, atmosphereHeight, coefficientsR);
+		opticalDepthLight.y = predictDensityInOut(samplePositionLight, sunDirection, sampleGeoCenter, earthRadius, atmosphereHeight, coefficientsM);
 
-		vec3 tau = -(betaR * (opticalDepthR + opticalDepthLightR) + betaM * 1.1f * (opticalDepthM + opticalDepthLightM));
-		vec3 tauR = tau + vec3(hr);
-		vec3 tauM = tau + vec3(hm);
+		vec3 tau = -(betaR * (opticalDepth.x + opticalDepthLight.x) + betaM * 1.1f * (opticalDepth.y + opticalDepthLight.y));
+		vec3 tauR = tau + vec3(density.x);
+		vec3 tauM = tau + vec3(density.y);
 		vec3 attenuationR = exp(tauR) * segmentLength;
 		vec3 attenuationM = exp(tauM) * segmentLength;
 		sumR += attenuationR;
