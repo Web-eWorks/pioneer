@@ -92,6 +92,20 @@ float predictDensityInOut(const in vec3 sample, const in vec3 dir, const in vec3
     return opticalDepth;
 }
 
+// Compute an exponential term controlling the light is occluded by the geosphere
+// Expects the current sample position to be at {0,0,0}
+float predictLightShadow(const in vec3 center, const in vec3 dir, float atmosphereHeight)
+{
+	// Height of the closest point of the geosphere to the light ray (negative values are travelling under the terrain)
+	float sunRayDot = dot(center, dir);
+	float sunRayHeight = length(center - sunRayDot * dir) - geosphereRadius;
+	// Derive the width of the terminator from the atmosphere height
+	// NOTE: exp(-2.0) is a handpicked constant with no physical meaning
+	float extinctionScale = atmosphereHeight * exp(-2.0);
+
+	return sunRayDot > 0.0 ? min(1.0, exp(sunRayHeight / extinctionScale)) : 1.0;
+}
+
 void skipRay(inout vec2 opticalDepth, const in vec3 dir, const in vec2 boundaries, const in vec3 center)
 {
 	int numSamples = 16;
@@ -134,8 +148,10 @@ void processRay(inout vec3 sumR, inout vec3 sumM, inout vec2 opticalDepth, const
 		opticalDepthLight.x = predictDensityInOut(samplePositionLight, sunDirection, sampleGeoCenter, geosphereRadius, atmosphereHeight, coefficientsR);
 		opticalDepthLight.y = predictDensityInOut(samplePositionLight, sunDirection, sampleGeoCenter, geosphereRadius, atmosphereHeight, coefficientsM);
 
+		float lightAttn = predictLightShadow(sampleGeoCenter, sunDirection, atmosphereHeight);
+
 		vec3 tau = -(betaR * (opticalDepth.x + opticalDepthLight.x) + betaM * 1.1f * (opticalDepth.y + opticalDepthLight.y));
-		vec3 attenuation = exp(tau);
+		vec3 attenuation = exp(tau) * lightAttn;
 		sumR += density.x * attenuation;
 		sumM += density.y * attenuation;
 		tCurrent += segmentLength;
@@ -150,59 +166,12 @@ vec3 computeIncidentLight(const in vec3 sunDirection, const in vec3 dir, const i
 	float atmosMin = atmosDist.x * geosphereRadius;
 	float atmosMax = atmosDist.y * geosphereRadius;
 
-	// solve Cylinder entry/exit dist
-	vec2 cylinder_intersect = rayCylinderIntersect(dir, center, sunDirection, geosphereRadius);
-	bool hasIntersect = cylinder_intersect.x != 0 || cylinder_intersect.y != 0;
-
-	vec3 cylinder_near = center - dir * cylinder_intersect.x;
-	vec3 cylinder_far  = center - dir * cylinder_intersect.y;
-
-	// test if ray passes through shadow
-	float a = dot(cylinder_near, sunDirection);
-	float b = dot(cylinder_far , sunDirection);
-	bool intersectsShadow = hasIntersect && (a > 0.f || b > 0.f);
-
-	/*
-	* We have three options:
-	* 1) Ray does not intersect shadow
-	*    Do nothing
-	* 2) Ray intersects shadow, starts inside
-	*    (cylinder_intersect.y, tmax)
-	* 3) Ray intersects shadow, starts outside
-	*    (tmin, cylinder_intersect.x) + (cylinder_intersect.y, tmax)
-	*/
-
-	bool startsInside = raySphereIntersect(center, sunDirection, geosphereRadius).x != 0.f;
-
-	float rayMin = atmosMin;
-	float rayMax = atmosMax;
-	if (intersectsShadow) {
-		rayMin = min(atmosMax, cylinder_intersect.y);
-		rayMax = max(atmosMin, cylinder_intersect.x);
-	}
-
-	if (rayMin == rayMax)
-		return vec3(0.f);
-
 	int numSamples = 16;
 	vec3 sumR = vec3(0.0);
 	vec3 sumM = vec3(0.0); // mie and rayleigh contribution
 
 	vec2 opticalDepth = vec2(0.f);
-
-	if (atmosMin != rayMax) {
-		// process near side of ray
-		processRay(sumR, sumM, opticalDepth, sunDirection, dir, vec2(atmosMin, rayMax), center);
-	}
-
-	if (atmosMin != rayMin) {
-		// calculate optical depth for shadow
-		skipRay(opticalDepth, dir, vec2(rayMax, rayMin), center);
-	}
-
-	// process far side of ray
-	processRay(sumR, sumM, opticalDepth, sunDirection, dir, vec2(rayMin, atmosMax), center);
-
+	processRay(sumR, sumM, opticalDepth, sunDirection, dir, vec2(atmosMin, atmosMax), center);
 
 	float mu = dot(dir, sunDirection); // mu in the paper which is the cosine of the angle between the sun direction and the ray direction
 	float phaseR = 3.f / (16.f * 3.141592) * (1 + mu * mu);

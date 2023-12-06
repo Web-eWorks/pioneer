@@ -16,7 +16,7 @@ out vec4 frag_color;
 void main(void)
 {
 	vec3 eyenorm = normalize(varyingEyepos.xyz);
-	vec3 specularHighlight = vec3(0.0);
+	vec3 atmLight = vec3(0.0);
 
 	vec2 atmosDist  = raySphereIntersect(geosphereCenter, eyenorm, geosphereAtmosTopRad);
 	vec2 groundDist = raySphereIntersect(geosphereCenter, eyenorm, 1.0);
@@ -38,27 +38,28 @@ void main(void)
 	vec3 a = atmosDist.x * eyenorm - geosphereCenter;
 	vec3 b = atmosDist.y * eyenorm - geosphereCenter;
 
-	vec4 atmosDiffuse = vec4(0.0);
+	// vec4 atmosDiffuse = vec4(0.0);
+	// vec3 surfaceNorm = normalize(atmosDist.x * eyenorm - geosphereCenter);
 
 #if (NUM_LIGHTS > 0)
-	vec3 surfaceNorm = normalize(atmosDist.x * eyenorm - geosphereCenter);
 	for (int i=0; i<NUM_LIGHTS; ++i) {
 		vec3 lightDir = normalize(vec3(uLight[i].position));
-
 		float uneclipsed = clamp(calcUneclipsedSky(eclipse, NumShadows, a, b, lightDir), 0.0, 1.0);
-		CalcPlanetDiffuse(atmosDiffuse, toLinear(uLight[i].diffuse), lightDir, surfaceNorm, uneclipsed);
 
 		// Convert from radius-relative to real coordinates
 		vec3 center = geosphereCenter * geosphereRadius;
+		vec3 transmittance = computeIncidentLight(lightDir, eyenorm, center, atmosDist);
 
-		specularHighlight += computeIncidentLight(lightDir, eyenorm, center, atmosDist) * INV_NUM_LIGHTS;
+		vec3 intensity = vec3(20.0);
+
+		atmLight += toLinear(uLight[i].diffuse.xyz) * intensity * transmittance * uneclipsed * INV_NUM_LIGHTS;
 	}
 #endif
 
-	atmosDiffuse.a = 1.0;
-	vec4 color = atmosDiffuse *
-		vec4(specularHighlight.rgb, 1.0) * 20;
+	// Tonemap
+	vec3 color = 1 - exp(-atmLight);
 
-	frag_color = toSRGB(1 - exp(-color));
+	// Convert to sRGB for blending with framebuffer (sigh)
+	frag_color = vec4(toSRGB(color), 1.0);
 
 }
