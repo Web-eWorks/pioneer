@@ -6,18 +6,20 @@ float height(const in vec3 orig, const in vec3 center)
 	return height;
 }
 
-void scatter(out vec2 density, const in vec3 orig, const in vec3 center)
+vec2 scatter(const in vec3 orig, const in vec3 center, const in float segmentLength)
 {
 	vec2 baricStep = vec2(7994.f, 1200.f);
 
 	float height = height(orig, center);
 
-	density = -height / baricStep;
+	vec2 density = -height / baricStep;
 
 	// earth atmospheric density: 1.225 kg/m^3, divided by 1e5
 	// 1/1.225e-5 = 81632.65306
 	float earthDensities = geosphereAtmosFogDensity * 81632.65306f;
 	density /= earthDensities;
+
+	return exp(density) * segmentLength;
 }
 
 void findClosestHeight(out float h, out float t, const in vec3 orig, const in vec3 dir, const in vec3 center)
@@ -100,9 +102,7 @@ void skipRay(inout vec2 opticalDepth, const in vec3 dir, const in vec2 boundarie
 		vec3 samplePosition = vec3(tCurrent + segmentLength * 0.5f) * dir;
 
 		// primary ray is approximated by (density * isegmentLength)
-		vec2 density;
-		scatter(density, samplePosition, center);
-		opticalDepth += exp(density) * segmentLength;
+		opticalDepth += scatter(samplePosition, center, segmentLength);
 
 		tCurrent += segmentLength;
 	}
@@ -123,9 +123,8 @@ void processRay(inout vec3 sumR, inout vec3 sumM, inout vec2 opticalDepth, const
 	for (int i = 0; i < numSamples; ++i) {
 		vec3 samplePosition = vec3(tCurrent + segmentLength * 0.5f) * dir;
 
-		vec2 density;
-		scatter(density, samplePosition, center);
-		opticalDepth += exp(density) * segmentLength;
+		vec2 density = scatter(samplePosition, center, segmentLength);
+		opticalDepth += density;
 
 		// light optical depth
 		vec2 opticalDepthLight = vec2(0.f);
@@ -136,12 +135,9 @@ void processRay(inout vec3 sumR, inout vec3 sumM, inout vec2 opticalDepth, const
 		opticalDepthLight.y = predictDensityInOut(samplePositionLight, sunDirection, sampleGeoCenter, geosphereRadius, atmosphereHeight, coefficientsM);
 
 		vec3 tau = -(betaR * (opticalDepth.x + opticalDepthLight.x) + betaM * 1.1f * (opticalDepth.y + opticalDepthLight.y));
-		vec3 tauR = tau + vec3(density.x);
-		vec3 tauM = tau + vec3(density.y);
-		vec3 attenuationR = exp(tauR) * segmentLength;
-		vec3 attenuationM = exp(tauM) * segmentLength;
-		sumR += attenuationR;
-		sumM += attenuationM;
+		vec3 attenuation = exp(tau);
+		sumR += density.x * attenuation;
+		sumM += density.y * attenuation;
 		tCurrent += segmentLength;
 	}
 }
